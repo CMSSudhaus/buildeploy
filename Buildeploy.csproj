@@ -47,12 +47,14 @@
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChangeVersion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReferenceCheck\AssemblyCollection.cs" />
     <Compile Include="ReferenceCheck\AssemblyCollectionBase.cs" />
     <Compile Include="ReferenceCheck\MissingAssemblyCollection.cs" />
     <Compile Include="ReferenceCheck\MissingReference.cs" />
     <Compile Include="ReferenceCheck\ReferenceChecker.cs" />
+    <Compile Include="Tasks\ChangeVersion.cs" />
     <Compile Include="Tasks\CheckReferences.cs" />
     <Compile Include="Tasks\ClickOnceTask.cs" />
     <Compile Include="Tasks\MSTest.cs" />

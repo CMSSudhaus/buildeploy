@@ -23,6 +23,11 @@
 
 
   <UsingTask
+        TaskName="Buildeploy.Tasks.ChangeVersion"
+        AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+
+
+  <UsingTask
     TaskName="Buildeploy.Tasks.MSTest"
     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
