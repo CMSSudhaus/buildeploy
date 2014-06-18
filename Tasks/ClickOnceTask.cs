@@ -5,7 +5,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using System.Linq;
 using Microsoft.Build.Framework;
 
-namespace CMS.Library.Addin.MSBuildTasks
+namespace Buildeploy.Tasks
 {
     public class ClickOnce : PackageTaskBase
     {

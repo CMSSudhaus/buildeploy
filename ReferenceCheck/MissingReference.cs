@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace CMS.Library.Addin
+namespace Buildeploy.ReferenceCheck
 {
     [Serializable]
     class MissingReference
