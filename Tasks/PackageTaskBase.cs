@@ -17,11 +17,12 @@ namespace CMS.Library.Addin.MSBuildTasks
     using Microsoft.Build.Tasks.Deployment.ManifestUtilities;
     using System.Runtime.Versioning;
     using System.Reflection;
+    using Microsoft.Build.Utilities;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public abstract class PackageTaskBase : BaseTask
+    public abstract class PackageTaskBase : Task
     {
 
 
@@ -337,6 +338,7 @@ namespace CMS.Library.Addin.MSBuildTasks
 
         private static bool HasEmbeddedManifest(string fileName)
         {
+            
             Type manifestType = typeof(System.Deployment.Application.ApplicationDeployment).Assembly.GetType("System.Deployment.Application.Manifest.AssemblyManifest");
             try
             {

@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using Microsoft.Build.Framework;
 using System.Reflection;
+using Microsoft.Build.Utilities;
 
 namespace CMS.Library.Addin.MSBuildTasks
 {
-    public class CheckReferences : BaseTask
+    public class CheckReferences : Task
     {
         public string Path { get; set; }
 

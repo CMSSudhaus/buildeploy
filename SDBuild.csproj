@@ -30,17 +30,38 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Deployment" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.Build.Engine" />
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Tasks.v4.0" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReferenceChecker\AssemblyCollection.cs" />
+    <Compile Include="ReferenceChecker\AssemblyCollectionBase.cs" />
+    <Compile Include="ReferenceChecker\MissingAssemblyCollection.cs" />
+    <Compile Include="ReferenceChecker\MissingReference.cs" />
+    <Compile Include="ReferenceChecker\ReferenceChecker.cs" />
+    <Compile Include="Tasks\CheckReferences.cs" />
+    <Compile Include="Tasks\ClickOnceTask.cs" />
+    <Compile Include="Tasks\MSTest.cs" />
+    <Compile Include="Tasks\NugetPackage.cs" />
+    <Compile Include="Tasks\PackageTaskBase.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CMS.Library.Net.targets" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
