@@ -14,7 +14,7 @@ namespace Buildeploy.ReferenceCheck
         private string rootPath;
         private AssemblyCollection excludedAssemblies = new AssemblyCollection();
         private MissingAssemblyCollection reportedAssemblies = new MissingAssemblyCollection();
-        private const string frameworkLibResourceName = "CMS.Library.Addin.FrameworkAssemblies.txt";
+        private const string frameworkLibResourceName = "Buildeploy.FrameworkAssemblies.txt";
         public ReferenceChecker()
         {
             Assembly assembly = Assembly.GetExecutingAssembly();

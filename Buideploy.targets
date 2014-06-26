@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildCommunityTasksPath>.\</MSBuildCommunityTasksPath>
-    <BuildeployTasksAssemblyFile Condition="$(BuildeployTasksAssemblyFile) == ''">buildeploy.dll</BuildeployTasksAssemblyFile>
+    <BuildeployTasksAssemblyFile Condition="$(BuildeployTasksAssemblyFile) == ''">bin\debug\buildeploy.dll</BuildeployTasksAssemblyFile>
     <RedistConfiguration Condition="$(RedistConfiguration) == ''">Release</RedistConfiguration>
   </PropertyGroup>
 
@@ -66,13 +66,7 @@
   </Target>
 
   <Target Name="CopyLocalizationFilesPerCulture" Inputs="@(LocalizationCulture)" Outputs="target\%(LocalizationCulture.FileName)">
-    <GetLibraryPath
-            ConfigurationName="$(RedistConfiguration)"
-            Version="$(LibraryVersion)" Condition="$(LibraryVersion)!=''">
-      <Output TaskParameter="Result" PropertyName="LibPath"/>
-
-    </GetLibraryPath>
-
+ 
     <PropertyGroup>
       <CompileOutput>$(MSBuildProjectDirectory)\bin\$(RedistConfiguration)\</CompileOutput>
     </PropertyGroup>
@@ -295,8 +289,8 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(RedistFiles)" DestinationFolder="$(VersionRedistRoot)\%(RecursiveDir)"/>
-    <Zip Files="@(ClientRedistFiles)" WorkingDirectory="$(TempClientRedist)" ZipFileName="$(VersionRedistRoot)\Client-v$(Version).zip" />
-    <Zip Files="@(ServerRedistFiles)" WorkingDirectory="$(TempServerRedist)" ZipFileName="$(VersionRedistRoot)\Server-v$(Version).zip" />
+    <!--<Zip Files="@(ClientRedistFiles)" WorkingDirectory="$(TempClientRedist)" ZipFileName="$(VersionRedistRoot)\Client-v$(Version).zip" />
+    <Zip Files="@(ServerRedistFiles)" WorkingDirectory="$(TempServerRedist)" ZipFileName="$(VersionRedistRoot)\Server-v$(Version).zip" />-->
     <CallTarget Targets="AfterRedistBinaries"/>
 
   </Target>
@@ -337,10 +331,10 @@
       <CompiledSite Include="$(CompiledSite)\**\*.*" Exclude="$(CompiledSite)\**\*.csproj;$(CompiledSite)\**\*.user;$(CompiledSite)\obj\**;$(CompiledSite)\**\web*.config;$(CompiledSite)\**\*.snk;$(CompiledSite)\**\*.log" />
     </ItemGroup>
     <Copy SourceFiles="@(CompiledSite)" DestinationFolder="$(WebsiteRedistDir)\%(RecursiveDir)" Condition="$(WebsiteRedistDir) != ''" />
-    <Zip Files="@(CompiledSite)" WorkingDirectory="Temp\Compiledsite" ZipFileName="$(VersionRedistRoot)\Site-v$(Version).zip" />
+    <!--<Zip Files="@(CompiledSite)" WorkingDirectory="Temp\Compiledsite" ZipFileName="$(VersionRedistRoot)\Site-v$(Version).zip" />-->
   </Target>
 
-  <Target Name="Redist" DependsOnTargets="GetLib;RedistBinaries;PrecompileWeb;ClickOnce;OctoPackage" >
+  <Target Name="Redist" DependsOnTargets="RedistBinaries;PrecompileWeb;ClickOnce;OctoPackage" >
     <RemoveDir Directories="$(TempRedistRoot)"/>
   </Target>
 </Project>

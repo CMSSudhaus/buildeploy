@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Buildeploy
+namespace Buildeploy.Tasks
 {
     public sealed class ChangeVersion : Task, ILogWriter
     {
