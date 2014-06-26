@@ -36,7 +36,7 @@
       <Output TaskParameter="Include" ItemName="Configuration" />
     </CreateItem>
   </Target>
-  
+
   <Target Name="BeforeBuild">
   </Target>
   <Target Name="Build"
@@ -66,7 +66,7 @@
   </Target>
 
   <Target Name="CopyLocalizationFilesPerCulture" Inputs="@(LocalizationCulture)" Outputs="target\%(LocalizationCulture.FileName)">
- 
+
     <PropertyGroup>
       <CompileOutput>$(MSBuildProjectDirectory)\bin\$(RedistConfiguration)\</CompileOutput>
     </PropertyGroup>
@@ -253,7 +253,18 @@
     <MakeDir Directories="$(TempRedistRoot)\Client"/>
 
     <NUnit Assemblies="@(NUnitAssembly)" ToolPath="$(LibPath)" Condition="@(NUnitAssembly)!=''" WorkingDirectory="bin\$(RedistConfiguration)"/>
-    <MSTest Assemblies="@(MSTestAssembly)" Condition="@(MSTestAssembly)!=''" WorkingDirectory="bin\$(RedistConfiguration)" Category="$(MSTestCategory)"/>
+    <PropertyGroup>
+      <MSTestExe Condition="$(MSTestExe)=='' AND $(VS120COMNTOOLS)!=''">$(VS120COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
+      <MSTestExe Condition="$(MSTestExe)=='' AND $(VS110COMNTOOLS)!=''">$(VS110COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
+      <MSTestExe Condition="$(MSTestExe)=='' AND $(VS100COMNTOOLS)!=''">$(VS100COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
+    </PropertyGroup>
+    
+    <MSTest 
+      MSTestExe="$(MSTestExe)" 
+      Assemblies="@(MSTestAssembly)" 
+      Condition="$(SkipMSTest)!=true and @(MSTestAssembly)!=''" 
+      WorkingDirectory="bin\$(RedistConfiguration)" 
+      Category="$(MSTestCategory)"/>
 
 
     <CreateItem Include="@(ClientRedistFile->'$(CompileOutput)%(relativedir)%(filename)%(extension)')">

@@ -23,10 +23,17 @@ namespace Buildeploy.Tasks
         {
             
         }
+
+        public string MSTestExe { get; set; }
         protected override string GenerateFullPathToTool()
         {
+            if (!string.IsNullOrEmpty(MSTestExe))
+                return MSTestExe;
+
             return System.IO.Path.Combine(Environment.ExpandEnvironmentVariables(@"%VS100COMNTOOLS%..\IDE"), ToolName);
         }
+
+
 
         protected override string ToolName
         {
