@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package>
   <metadata>
-    <id>Buideploy.net</id>
+    <id>Buildeploy.net</id>
     <version>$version$</version>
     <title>Buideploy</title>
     <authors>Sergej Derjabkin</authors>

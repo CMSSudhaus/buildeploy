@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildCommunityTasksPath>.\</MSBuildCommunityTasksPath>
-    <BuildeployTasksAssemblyFile Condition="$(BuildeployTasksAssemblyFile) == ''">bin\debug\buildeploy.dll</BuildeployTasksAssemblyFile>
+    <BuildeployTasksAssemblyFile Condition="$(BuildeployTasksAssemblyFile) == ''">$(MSBuildThisFileDirectory)\buildeploy.dll</BuildeployTasksAssemblyFile>
     <RedistConfiguration Condition="$(RedistConfiguration) == ''">Release</RedistConfiguration>
   </PropertyGroup>
 
