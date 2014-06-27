@@ -1,21 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package>
   <metadata>
-    <id>DevExpress.BonusSkins</id>
+    <id>Buideploy.net</id>
     <version>$version$</version>
-    <title>DevExpress BonusSkins</title>
-    <authors>DevExpress</authors>
+    <title>Buideploy</title>
+    <authors>Sergej Derjabkin</authors>
     <owners>Sergej Derjabkin</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>DevExpress Data Library </description>
+    <description>Build and deployment scripts</description>
     <releaseNotes></releaseNotes>
     <copyright>Copyright 2014 Sergej Derjabkin</copyright>
-    <tags>DevEpxress</tags>
-    <dependencies>
-      <dependency id="DevExpress.Core" version="[$version$]" />
-    </dependencies>
+    <tags>Build Deploy</tags>
   </metadata>
   <files>
-    <file src="$SourceDir$\DevExpress.BonusSkins.v14.1.dll" target="lib\net40\DevExpress.BonusSkins.v14.1.dll" />
+    <file src="$SourceDir$\buildeploy.dll" target="lib\net40\buildeploy.dll" />
+    <file src="$SourceDir$\buildeploy.targets" target="lib\net40\buildeploy.targets" />
   </files>
 </package>

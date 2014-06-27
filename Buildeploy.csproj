@@ -62,7 +62,9 @@
     <Compile Include="Tasks\PackageTaskBase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Buideploy.targets" />
+    <None Include="Buildeploy.targets">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
