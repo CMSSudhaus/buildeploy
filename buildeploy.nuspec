@@ -7,9 +7,9 @@
     <authors>Sergej Derjabkin</authors>
     <owners>Sergej Derjabkin</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Build and deployment scripts</description>
+    <description>Build and deployment scripts for packaging .net solutions</description>
     <releaseNotes></releaseNotes>
-    <copyright>Copyright 2014 Sergej Derjabkin</copyright>
+    <copyright>Copyright 2014 (c) CMS Sudhaus & Partner GmbH</copyright>
     <tags>Build Deploy</tags>
   </metadata>
   <files>
