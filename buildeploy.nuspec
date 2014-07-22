@@ -13,7 +13,7 @@
     <tags>Build Deploy</tags>
   </metadata>
   <files>
-    <file src="$SourceDir$\buildeploy.dll" target="lib\net40\buildeploy.dll" />
-    <file src="$SourceDir$\buildeploy.targets" target="lib\net40\buildeploy.targets" />
+    <file src="$SourceDir$\buildeploy.dll" target="tools\buildeploy.dll" />
+    <file src="$SourceDir$\buildeploy.targets" target="tools\buildeploy.targets" />
   </files>
 </package>
