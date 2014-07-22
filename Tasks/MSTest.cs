@@ -5,7 +5,7 @@
 // -----------------------------------------------------------------------
 using System.Resources;
 
-namespace Buildeploy.Tasks
+namespace Cms.Buildeploy.Tasks
 {
     using System;
     using System.Collections.Generic;

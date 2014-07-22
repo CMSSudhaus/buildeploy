@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Reflection;
 
-namespace Buildeploy
+namespace Cms.Buildeploy
 {
     public abstract class VersionChangerBase
     {

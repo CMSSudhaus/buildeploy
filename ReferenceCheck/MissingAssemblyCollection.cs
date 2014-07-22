@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Buildeploy.ReferenceCheck
+namespace Cms.Buildeploy.ReferenceCheck
 {
     class MissingAssemblyCollection : AssemblyCollectionBase<MissingReference>
     {

@@ -5,9 +5,9 @@ using System.Text;
 using Microsoft.Build.Framework;
 using System.Reflection;
 using Microsoft.Build.Utilities;
-using Buildeploy.ReferenceCheck;
+using Cms.Buildeploy.ReferenceCheck;
 
-namespace Buildeploy.Tasks
+namespace Cms.Buildeploy.Tasks
 {
     public class CheckReferences : Task
     {

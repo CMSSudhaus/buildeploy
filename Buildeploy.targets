@@ -10,25 +10,25 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 
   <UsingTask
-        TaskName="Buildeploy.Tasks.CheckReferences"
+        TaskName="Cms.Buildeploy.Tasks.CheckReferences"
         AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
   <UsingTask
-        TaskName="Buildeploy.Tasks.ClickOnce"
+        TaskName="Cms.Buildeploy.Tasks.ClickOnce"
         AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
   <UsingTask
-        TaskName="Buildeploy.Tasks.NugetPackage"
-        AssemblyFile="$(BuildeployTasksAssemblyFile)" />
-
-
-  <UsingTask
-        TaskName="Buildeploy.Tasks.ChangeVersion"
+        TaskName="Cms.Buildeploy.Tasks.NugetPackage"
         AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
 
   <UsingTask
-    TaskName="Buildeploy.Tasks.MSTest"
+        TaskName="Cms.Buildeploy.Tasks.ChangeVersion"
+        AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+
+
+  <UsingTask
+    TaskName="Cms.Buildeploy.Tasks.MSTest"
     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
   <Target Name="Configurations">

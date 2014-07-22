@@ -4,7 +4,7 @@ using System.Text;
 using System.Reflection;
 using System.IO;
 
-namespace Buildeploy.ReferenceCheck
+namespace Cms.Buildeploy.ReferenceCheck
 {
     class ReferenceChecker : MarshalByRefObject
     {

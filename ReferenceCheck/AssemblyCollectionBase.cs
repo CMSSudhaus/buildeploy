@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 
-namespace Buildeploy.ReferenceCheck
+namespace Cms.Buildeploy.ReferenceCheck
 {
     abstract class AssemblyCollectionBase<TElement> : Collection<TElement>
     {

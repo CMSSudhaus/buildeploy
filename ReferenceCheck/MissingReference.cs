@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace Buildeploy.ReferenceCheck
+namespace Cms.Buildeploy.ReferenceCheck
 {
     [Serializable]
     class MissingReference

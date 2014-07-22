@@ -7,7 +7,7 @@
     <ProjectGuid>{CCF46E03-A210-428D-B3DD-57AC95C9B256}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Buildeploy</RootNamespace>
+    <RootNamespace>Cms.Buildeploy</RootNamespace>
     <AssemblyName>Buildeploy</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
