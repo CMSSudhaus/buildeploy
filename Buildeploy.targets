@@ -196,7 +196,8 @@
             WebsiteBasePath="$(CompiledSite)"
             CombineWithWebsite="%(OctoConfig.CombineWithWebsite)"
             WebsiteFiles="@(CompiledSiteWithConfig)"
-			LinkAssembliesWithManifestAsFile="$(ClickOnceLinkAssembliesWithManifestAsFile)"
+			      LinkAssembliesWithManifestAsFile="$(ClickOnceLinkAssembliesWithManifestAsFile)"
+            SkipClickOnce="%(OctoConfig.SkipClickOnce)"
             />
     <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(OctoConfig.Identity)_$(Version).zip"
           DestinationFolder="%(OctoConfig.DeployCopyPath)"
@@ -230,9 +231,9 @@
 
     <CallTarget Targets="BeforeRedistBinaries"/>
     <PropertyGroup>
-      <CompileOutput>$(MSBuildProjectDirectory)\bin\$(RedistConfiguration)\</CompileOutput>
+      <CompileOutput Condition="$(OutDir)==''">$(OutDir)</CompileOutput>
+      <CompileOutput Condition="$(CompileOutput)==''">$(MSBuildProjectDirectory)\bin\$(RedistConfiguration)\</CompileOutput>
       <RedistRoot Condition="$(CustomRedistRoot)!=''">$(CustomRedistRoot)</RedistRoot>
-
     </PropertyGroup>
 
     <Error Condition="$(RedistRoot)==''" Text="RedistRoot or CustomRedistRoot properties are not specified."/>
@@ -249,7 +250,7 @@
     </PropertyGroup>
 
     <RemoveDir Directories="$(TempRedistRoot)"/>
-    <CallTarget Targets="Build" Condition="'$(TestRedist)' != true"/>
+    <CallTarget Targets="Build" Condition="$(SkipBuild) != true"/>
 
     <MakeDir Directories="$(TempRedistRoot)\Client"/>
 
@@ -259,12 +260,12 @@
       <MSTestExe Condition="$(MSTestExe)=='' AND $(VS110COMNTOOLS)!=''">$(VS110COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
       <MSTestExe Condition="$(MSTestExe)=='' AND $(VS100COMNTOOLS)!=''">$(VS100COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
     </PropertyGroup>
-    
-    <MSTest 
-      MSTestExe="$(MSTestExe)" 
-      Assemblies="@(MSTestAssembly)" 
-      Condition="$(SkipMSTest)!=true and @(MSTestAssembly)!=''" 
-      WorkingDirectory="bin\$(RedistConfiguration)" 
+
+    <MSTest
+      MSTestExe="$(MSTestExe)"
+      Assemblies="@(MSTestAssembly)"
+      Condition="$(SkipMSTest)!=true and @(MSTestAssembly)!=''"
+      WorkingDirectory="bin\$(RedistConfiguration)"
       Category="$(MSTestCategory)"/>
 
 
@@ -303,10 +304,16 @@
     <Copy SourceFiles="@(RedistFiles)" DestinationFolder="$(VersionRedistRoot)\%(RecursiveDir)"/>
     <!--<Zip Files="@(ClientRedistFiles)" WorkingDirectory="$(TempClientRedist)" ZipFileName="$(VersionRedistRoot)\Client-v$(Version).zip" />
     <Zip Files="@(ServerRedistFiles)" WorkingDirectory="$(TempServerRedist)" ZipFileName="$(VersionRedistRoot)\Server-v$(Version).zip" />-->
+
     <CallTarget Targets="AfterRedistBinaries"/>
 
   </Target>
 
+  <Target Name="RedistProjects">
+    <MSBuild Projects="@(RedistProject)"
+            Properties="Configuration=%(Configuration.Identity);OutputPath=$(OutputPath);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL);NugetExe=$(NugetExe);SkipBuild=True;RedistRoot=$(RedistRoot);VersionPattern=*.*.*.*"
+            StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="RedistBinaries;PrecompileWeb;OctoPackage;ClickOnce;"/>
+  </Target>
   <Target Name="AfterWebsiteCompiled" />
   <Target Name="PrecompileWeb"  Condition="$(WebsiteSource)!=''">
 
@@ -346,7 +353,7 @@
     <!--<Zip Files="@(CompiledSite)" WorkingDirectory="Temp\Compiledsite" ZipFileName="$(VersionRedistRoot)\Site-v$(Version).zip" />-->
   </Target>
 
-  <Target Name="Redist" DependsOnTargets="RedistBinaries;PrecompileWeb;ClickOnce;OctoPackage" >
+  <Target Name="Redist" DependsOnTargets="RedistBinaries;PrecompileWeb;ClickOnce;OctoPackage;RedistProjects;AfterRedistBinaries;" >
     <RemoveDir Directories="$(TempRedistRoot)"/>
   </Target>
 </Project>
