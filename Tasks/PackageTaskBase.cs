@@ -302,8 +302,13 @@ namespace Cms.Buildeploy.Tasks
                 reference.TargetPath = targetPath;
             }
 
-            manifest.ResolveFiles(new string[] { BasePath, Path.GetDirectoryName(ConfigFile.ItemSpec) });
+            List<string> searchPaths = new List<string>();
+            searchPaths.Add(BasePath);
+            if (ConfigFile != null)
+                searchPaths.Add(Path.GetDirectoryName(ConfigFile.ItemSpec));
+            manifest.ResolveFiles(searchPaths.ToArray());
             manifest.UpdateFileInfo();
+
             TrustInfo trust = new TrustInfo();
             trust.IsFullTrust = true;
             manifest.TrustInfo = trust;
@@ -410,13 +415,17 @@ namespace Cms.Buildeploy.Tasks
             return manifest;
         }
 
+        public bool SkipClickOnce { get; set; }
+
         public override bool Execute()
         {
-            if (Files.Length == 0)
+            //If no ClickOnce files, compressing the website only.
+            if (Files.Length == 0 || SkipClickOnce)
             {
-                Log.LogError("No Files specified.");
-                return false;
+                CompressFiles(null);
+                return true;
             }
+
             string configFileName;
             ApplicationManifest appManifest;
             try
