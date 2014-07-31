@@ -60,6 +60,7 @@
     <Compile Include="Tasks\MSTest.cs" />
     <Compile Include="Tasks\NugetPackage.cs" />
     <Compile Include="Tasks\PackageTaskBase.cs" />
+    <Compile Include="Tasks\ResolveRedistAssemblies.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Buildeploy.targets">

@@ -7,8 +7,6 @@
   </PropertyGroup>
 
 
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-
   <UsingTask
         TaskName="Cms.Buildeploy.Tasks.CheckReferences"
         AssemblyFile="$(BuildeployTasksAssemblyFile)" />
@@ -31,6 +29,10 @@
     TaskName="Cms.Buildeploy.Tasks.MSTest"
     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
+  <UsingTask
+    TaskName="Cms.Buildeploy.Tasks.ResolveRedistAssemblies"
+    AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+
   <Target Name="Configurations">
     <CreateItem Include="$(TargetConfigurations)">
       <Output TaskParameter="Include" ItemName="Configuration" />
@@ -50,17 +52,16 @@
     <CallTarget Targets="BeforeBuild"/>
 
     <PropertyGroup>
-      <OutputPath>$(MSBuildProjectDirectory)\bin\%(Configuration.Identity)\</OutputPath>
-      <OutputPathSL>$(MSBuildProjectDirectory)\bin\%(Configuration.Identity)SL\</OutputPathSL>
-      <ReferencePath>$(OutputPath)</ReferencePath>
+      <CompileOutputFolder Condition="$(CompileOutputFolder)==''">$(MSBuildProjectDirectory)\bin\%(Configuration.Identity)\</CompileOutputFolder>
+      <ReferencePath>$(CompileOutputFolder)</ReferencePath>
     </PropertyGroup>
 
-    <RemoveDir Directories="$(OutputPath)" Condition="$(DXFrameworkPath)==''" />
+    <RemoveDir Directories="$(CompileOutputFolder)" />
 
-    <MakeDir  Directories="$(OutputPath)" />
+    <MakeDir  Directories="$(CompileOutputFolder)" />
 
     <MSBuild Projects="@(ProjectToBuild)"
-                 Properties="Configuration=%(Configuration.Identity);OutputPath=$(OutputPath);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL)"
+                 Properties="Configuration=%(Configuration.Identity);OutDir=$(CompileOutputFolder);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL)"
                  StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="Clean;Rebuild"/>
 
   </Target>
@@ -231,8 +232,7 @@
 
     <CallTarget Targets="BeforeRedistBinaries"/>
     <PropertyGroup>
-      <CompileOutput Condition="$(OutDir)==''">$(OutDir)</CompileOutput>
-      <CompileOutput Condition="$(CompileOutput)==''">$(MSBuildProjectDirectory)\bin\$(RedistConfiguration)\</CompileOutput>
+      <CompileOutput Condition="$(CompileOutput)==''">$(OutputRoot)\$(RedistConfiguration)\</CompileOutput>
       <RedistRoot Condition="$(CustomRedistRoot)!=''">$(CustomRedistRoot)</RedistRoot>
     </PropertyGroup>
 
@@ -269,13 +269,22 @@
       Category="$(MSTestCategory)"/>
 
 
-    <CreateItem Include="@(ClientRedistFile->'$(CompileOutput)%(relativedir)%(filename)%(extension)')">
+    <!--<CreateItem Include="@(ClientRedistFile->'$(CompileOutput)%(relativedir)%(filename)%(extension)')">
       <Output TaskParameter="Include" ItemName="RedistPath" />
     </CreateItem>
 
     <CreateItem Include="@(ServerRedistFile->'$(CompileOutput)%(filename)%(extension)')">
       <Output TaskParameter="Include" ItemName="ServerRedistPath" />
     </CreateItem>
+-->
+   
+    <ResolveRedistAssemblies Files="@(ClientRedistFile)" LookUpPath="$(CompileOutput)">
+      <Output TaskParameter="Result" ItemName="RedistPath"/>
+    </ResolveRedistAssemblies>
+
+    <ResolveRedistAssemblies Files="@(ServerRedistFile)" LookUpPath="$(CompileOutput)">
+      <Output TaskParameter="Result" ItemName="ServerRedistPath"/>
+    </ResolveRedistAssemblies>
 
     <AssignTargetPath Files="@(RedistPath)" RootFolder="$(CompileOutput)">
       <Output TaskParameter="AssignedFiles" ItemName="RedistWithTargetPath"/>
@@ -311,7 +320,7 @@
 
   <Target Name="RedistProjects">
     <MSBuild Projects="@(RedistProject)"
-            Properties="Configuration=%(Configuration.Identity);OutputPath=$(OutputPath);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL);NugetExe=$(NugetExe);SkipBuild=True;RedistRoot=$(RedistRoot);VersionPattern=*.*.*.*"
+            Properties="Configuration=%(Configuration.Identity);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL);NugetExe=$(NugetExe);SkipBuild=True;RedistRoot=$(RedistRoot);VersionPattern=*.*.*.*"
             StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="RedistBinaries;PrecompileWeb;OctoPackage;ClickOnce;"/>
   </Target>
   <Target Name="AfterWebsiteCompiled" />
@@ -322,7 +331,11 @@
     <RemoveDir Directories="$(CompiledSite)"/>
     <RemoveDir Directories="$(WebsiteSource)\bin"/>
 
-    <Copy SourceFiles="@(WebsiteDependency)" DestinationFolder="$(WebSiteSource)\bin"/>
+    <CreateItem Include="@(WebsiteDependency->'$(CompileOutput)%(relativedir)%(filename)%(extension)')">
+      <Output TaskParameter="Include" ItemName="WebsiteFile" />
+    </CreateItem>
+
+    <Copy SourceFiles="@(WebsiteFile)" DestinationFolder="$(WebSiteSource)\bin"/>
 
     <ItemGroup>
       <ServerRedistFiles Include="$(TempServerRedist)\**"/>
