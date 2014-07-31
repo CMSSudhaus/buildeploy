@@ -80,9 +80,6 @@
 
     <Copy SourceFiles="@(LibLocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)" />
     <Copy SourceFiles="@(LocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)"/>
-
-
-
   </Target>
 
   <Target Name="CopyLocalizationFiles">
@@ -267,16 +264,6 @@
       Condition="$(SkipMSTest)!=true and @(MSTestAssembly)!=''"
       WorkingDirectory="bin\$(RedistConfiguration)"
       Category="$(MSTestCategory)"/>
-
-
-    <!--<CreateItem Include="@(ClientRedistFile->'$(CompileOutput)%(relativedir)%(filename)%(extension)')">
-      <Output TaskParameter="Include" ItemName="RedistPath" />
-    </CreateItem>
-
-    <CreateItem Include="@(ServerRedistFile->'$(CompileOutput)%(filename)%(extension)')">
-      <Output TaskParameter="Include" ItemName="ServerRedistPath" />
-    </CreateItem>
--->
    
     <ResolveRedistAssemblies Files="@(ClientRedistFile)" LookUpPath="$(CompileOutput)">
       <Output TaskParameter="Result" ItemName="RedistPath"/>
