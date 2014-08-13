@@ -58,6 +58,7 @@
     <Compile Include="Tasks\ChangeVersion.cs" />
     <Compile Include="Tasks\CheckReferences.cs" />
     <Compile Include="Tasks\ClickOnceTask.cs" />
+    <Compile Include="Tasks\GenerateVersionPattern.cs" />
     <Compile Include="Tasks\MSTest.cs" />
     <Compile Include="Tasks\NugetPackage.cs" />
     <Compile Include="Tasks\PackageTaskBase.cs" />

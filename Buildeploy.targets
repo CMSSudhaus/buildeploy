@@ -33,6 +33,10 @@
     TaskName="Cms.Buildeploy.Tasks.ResolveRedistAssemblies"
     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
+  <UsingTask
+     TaskName="Cms.Buildeploy.Tasks.GenerateVersionPattern"
+     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+
   <Target Name="Configurations">
     <CreateItem Include="$(TargetConfigurations)">
       <Output TaskParameter="Include" ItemName="Configuration" />
@@ -236,7 +240,18 @@
     <Error Condition="$(RedistRoot)==''" Text="RedistRoot or CustomRedistRoot properties are not specified."/>
     <Message Text="$(VersionPattern)"/>
 
-    <ChangeVersion Files="@(VersionFile)" Version="$(VersionPattern)">
+    <PropertyGroup>
+      <BuildVersionPattern Condition="BuildLabel!=''"></BuildVersionPattern>
+    </PropertyGroup>
+    <GenerateVersionPattern BuildNumber="$(BuildLabel)" StartDate="$(VersionStartDate)" Condition="$(BuildLabel)!=''">
+      <Output TaskParameter="Pattern" PropertyName="BuildVersionPattern"/>
+    </GenerateVersionPattern>
+
+    <ChangeVersion Files="@(VersionFile)" Version="$(BuildVersionPattern)" Condition="$(BuildVersionPattern)!=''">
+      <Output TaskParameter="NewVersion" PropertyName="Version"/>
+    </ChangeVersion>
+
+    <ChangeVersion Files="@(VersionFile)" Version="$(VersionPattern)" Condition="$(BuildVersionPattern)==''">
       <Output TaskParameter="NewVersion" PropertyName="Version"/>
     </ChangeVersion>
 
