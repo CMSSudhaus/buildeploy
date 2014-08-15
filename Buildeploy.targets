@@ -200,6 +200,8 @@
             WebsiteFiles="@(CompiledSiteWithConfig)"
 			      LinkAssembliesWithManifestAsFile="$(ClickOnceLinkAssembliesWithManifestAsFile)"
             SkipClickOnce="%(OctoConfig.SkipClickOnce)"
+            ApiKey="$(NugetApiKey)"
+            PushLocation="$(NugetPushLocation)"
             />
     <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(OctoConfig.Identity)_$(Version).zip"
           DestinationFolder="%(OctoConfig.DeployCopyPath)"
@@ -242,8 +244,10 @@
 
     <PropertyGroup>
       <BuildVersionPattern Condition="BuildLabel!=''"></BuildVersionPattern>
+      <GenerateVersionPrefix Condition="$(VersionPrefix) == ''">*.*</GenerateVersionPrefix>
+      <GenerateVersionPrefix Condition="$(VersionPrefix) != ''">$(VersionPrefix)</GenerateVersionPrefix>
     </PropertyGroup>
-    <GenerateVersionPattern BuildNumber="$(BuildLabel)" StartDate="$(VersionStartDate)" Condition="$(BuildLabel)!=''">
+    <GenerateVersionPattern BuildNumber="$(BuildLabel)" StartDate="$(VersionStartDate)" Prefix="$(GenerateVersionPrefix)" Condition="$(BuildLabel)!=''">
       <Output TaskParameter="Pattern" PropertyName="BuildVersionPattern"/>
     </GenerateVersionPattern>
 
@@ -258,7 +262,7 @@
 
     <PropertyGroup>
       <VersionRedistRoot Condition="$(DefaultVersionRedistRoot)!=''">$(DefaultVersionRedistRoot)</VersionRedistRoot>
-      <VersionRedistRoot Condition="$(DefaultVersionRedistRoot)==''">$(RedistRoot)\$(Version)</VersionRedistRoot>
+      <VersionRedistRoot Condition="$(DefaultVersionRedistRoot)==''">$(RedistRoot)\$(BuildDefinition)\$(Version)</VersionRedistRoot>
     </PropertyGroup>
 
     <RemoveDir Directories="$(TempRedistRoot)"/>

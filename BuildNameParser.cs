@@ -10,7 +10,7 @@ namespace Cms.Buildeploy
 {
     public class BuildNameParser
     {
-        public static string ParseBuildNameToPattern(string buildName, DateTime startDate)
+        public static string ParseBuildNameToPattern(string buildName, DateTime startDate, string prefix)
         {
             Regex regex = new Regex(@".*_(?<date>\d{8})\.(?<buildnumber>\d*)");
             var match = regex.Match(buildName);
@@ -18,8 +18,8 @@ namespace Cms.Buildeploy
                 "yyyyMMdd", CultureInfo.InvariantCulture);
 
             int buildNumber = int.Parse(match.Groups["buildnumber"].Value);
-            return string.Format(CultureInfo.InvariantCulture, "*.*.{0}.{1}",
-                date.Subtract(startDate).TotalDays, buildNumber * 100);
+            return string.Format(CultureInfo.InvariantCulture, "{2}.{0}.{1}",
+                date.Subtract(startDate).TotalDays, buildNumber * 100, prefix);
         }
     }
 }

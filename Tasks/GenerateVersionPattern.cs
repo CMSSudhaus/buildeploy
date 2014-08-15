@@ -18,6 +18,8 @@ namespace Cms.Buildeploy.Tasks
 
         public string StartDate { get; set; }
 
+        public string Prefix { get; set; }
+
         public override bool Execute()
         {
             DateTime date = new DateTime(2014, 1,1);
@@ -27,7 +29,7 @@ namespace Cms.Buildeploy.Tasks
                 date = DateTime.Parse(StartDate, CultureInfo.InvariantCulture);
             }
 
-            Pattern = BuildNameParser.ParseBuildNameToPattern(BuildNumber, date);
+            Pattern = BuildNameParser.ParseBuildNameToPattern(BuildNumber, date, string.IsNullOrWhiteSpace(Prefix) ? "*.*" : Prefix);
             return true;
         }
 
