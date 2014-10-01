@@ -321,7 +321,6 @@
     <!--<Zip Files="@(ClientRedistFiles)" WorkingDirectory="$(TempClientRedist)" ZipFileName="$(VersionRedistRoot)\Client-v$(Version).zip" />
     <Zip Files="@(ServerRedistFiles)" WorkingDirectory="$(TempServerRedist)" ZipFileName="$(VersionRedistRoot)\Server-v$(Version).zip" />-->
 
-    <CallTarget Targets="AfterRedistBinaries"/>
 
   </Target>
 

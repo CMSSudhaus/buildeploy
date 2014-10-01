@@ -139,12 +139,15 @@ namespace Cms.Buildeploy.Tasks
 
                 if (!RunNuget(commandLine.ToString())) return false;
 
-                string pushCommandLine = CreatePushCommandLine(nupkgTempDirectory);
+                string packageFileName = Directory.GetFiles(nupkgTempDirectory, "*.nupkg").Single();
+
+                string pushCommandLine = CreatePushCommandLine(packageFileName);
                 if (!string.IsNullOrWhiteSpace(pushCommandLine))
                 {
                     if (!RunNuget(pushCommandLine)) return false;
                 }
 
+                File.Copy(packageFileName, Path.Combine(outputDir, Path.GetFileName(packageFileName)));
                 return true;
             }
             finally
@@ -153,20 +156,19 @@ namespace Cms.Buildeploy.Tasks
             }
         }
 
-        private string CreatePushCommandLine(string packageDirectory)
+        private string CreatePushCommandLine(string packageFileName)
         {
 
             if (!string.IsNullOrWhiteSpace(PushLocation))
             {
                 StringBuilder sb = new StringBuilder("push ");
-                string packageFileName = Directory.GetFiles(packageDirectory, "*.nupkg").Single();
                 sb.Append(packageFileName);
                 if (!string.IsNullOrWhiteSpace(ApiKey))
                 {
                     sb.AppendFormat(CultureInfo.InvariantCulture, " -ApiKey {0}", ApiKey);
                 }
                 sb.AppendFormat(CultureInfo.InvariantCulture, " -Source \"{0}\"", PushLocation);
-          
+
                 return sb.ToString();
             }
             else
