@@ -200,8 +200,9 @@
             WebsiteFiles="@(CompiledSiteWithConfig)"
 			      LinkAssembliesWithManifestAsFile="$(ClickOnceLinkAssembliesWithManifestAsFile)"
             SkipClickOnce="%(OctoConfig.SkipClickOnce)"
-            ApiKey="$(NugetApiKey)"
-            PushLocation="$(NugetPushLocation)"
+            PackageId="%(OctoConfig.PackageId)"
+            PushLocation="%(OctoConfig.PushLocation)"
+            ApiKey="%(OctoConfig.ApiKey)"
             />
     <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(OctoConfig.Identity)_$(Version).zip"
           DestinationFolder="%(OctoConfig.DeployCopyPath)"
@@ -283,7 +284,7 @@
       Condition="$(SkipMSTest)!=true and @(MSTestAssembly)!=''"
       WorkingDirectory="bin\$(RedistConfiguration)"
       Category="$(MSTestCategory)"/>
-   
+
     <ResolveRedistAssemblies Files="@(ClientRedistFile)" LookUpPath="$(CompileOutput)">
       <Output TaskParameter="Result" ItemName="RedistPath"/>
     </ResolveRedistAssemblies>
@@ -337,12 +338,15 @@
     <RemoveDir Directories="$(CompiledSite)"/>
     <RemoveDir Directories="$(WebsiteSource)\bin"/>
 
-    <CreateItem Include="@(WebsiteDependency->'$(CompileOutput)%(relativedir)%(filename)%(extension)')">
-      <Output TaskParameter="Include" ItemName="WebsiteFile" />
-    </CreateItem>
+    <ResolveRedistAssemblies Files="@(WebsiteDependency)" LookUpPath="$(CompileOutput)">
+      <Output TaskParameter="Result" ItemName="WebsiteFileTemp"/>
+    </ResolveRedistAssemblies>
 
-    <Copy SourceFiles="@(WebsiteFile)" DestinationFolder="$(WebSiteSource)\bin"/>
+    <AssignTargetPath Files="@(WebsiteFileTemp)" RootFolder="$(CompileOutput)">
+      <Output TaskParameter="AssignedFiles" ItemName="WebsiteFile"/>
+    </AssignTargetPath>
 
+    <Copy SourceFiles="@(WebsiteFile)" DestinationFiles = "@(WebsiteFile->'$(WebSiteSource)\bin\%(TargetPath)')"/>
     <ItemGroup>
       <ServerRedistFiles Include="$(TempServerRedist)\**"/>
     </ItemGroup>

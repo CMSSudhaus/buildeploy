@@ -1,4 +1,5 @@
-﻿using Microsoft.Build.Framework;
+﻿using Cms.Buildeploy.ReferenceCheck;
+using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
@@ -81,9 +82,13 @@ namespace Cms.Buildeploy.Tasks
                 var referencedAssemblies = assembly.GetReferencedAssemblies();
                 foreach (var assemblyName in referencedAssemblies)
                 {
-                    string referencedFileName = GetAssemblyFileName(assemblyName);
-                    if (!string.IsNullOrEmpty(referencedFileName))
-                        AddReferences(referencedFileName, resultFileNames);
+                    if (!ReferenceChecker.IsFrameworkAssembly(assemblyName))
+                    {
+                        string referencedFileName = GetAssemblyFileName(assemblyName);
+
+                        if (!string.IsNullOrEmpty(referencedFileName))
+                            AddReferences(referencedFileName, resultFileNames, visited);
+                    }
                 }
             }
         }

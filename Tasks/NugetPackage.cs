@@ -31,9 +31,21 @@ namespace Cms.Buildeploy.Tasks
         [Required]
         public string OutputDirectory { get; set; }
 
+        public string PackageId { get; set; }
+
+        public string ApiKey { get; set; }
+
+        public string PushLocation { get; set; }
+
         protected override IPackageArchive CreatePackageArchive()
         {
-            return new NugetArchive(NugetExePath, Path.GetFullPath(NuspecFile), OutputDirectory, Version, Log);
+            var archive = new NugetArchive(NugetExePath, Path.GetFullPath(NuspecFile), OutputDirectory, Version, Log);
+            if (!string.IsNullOrWhiteSpace(PackageId))
+                archive.AddProperty("PackageId", PackageId);
+
+            archive.ApiKey = ApiKey;
+            archive.PushLocation = PushLocation;
+            return archive;
         }
 
         protected override string ReplaceDirectorySeparators(string entryName)
@@ -50,18 +62,44 @@ namespace Cms.Buildeploy.Tasks
         private readonly string nuspecFile;
         private readonly string version;
         private readonly string outputDir;
-
+        private readonly Dictionary<string, string> properties = new Dictionary<string, string>();
         internal NugetArchive(string nugetPath, string nuspecFile, string outputDir, string version, TaskLoggingHelper log)
         {
             this.nugetPath = nugetPath;
             this.nuspecFile = nuspecFile;
             this.version = version;
             Log = log;
-            tempPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            tempPath = CreateTempDirectory();
             this.outputDir = Path.GetFullPath(outputDir);
-            Directory.CreateDirectory(tempPath);
         }
 
+
+        private static string CreateTempDirectory()
+        {
+            string directory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(directory);
+            return directory;
+        }
+
+        internal string PushLocation { get; set; }
+
+        internal string ApiKey { get; set; }
+        internal void AddProperty(string name, string value)
+        {
+            properties.Add(name, value);
+        }
+
+
+        private string BuildPropertiesString()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var entry in properties)
+            {
+                sb.AppendFormat(CultureInfo.InvariantCulture, "{0}={1};", entry.Key, entry.Value);
+            }
+
+            return sb.ToString();
+        }
         private TaskLoggingHelper Log { get; set; }
 
 
@@ -81,12 +119,62 @@ namespace Cms.Buildeploy.Tasks
 
         public bool Finish()
         {
-            string commandLine = string.Format(CultureInfo.InvariantCulture,
-                "pack \"{0}\"  -NoPackageAnalysis -BasePath \"{1}\" -OutputDirectory \"{2}\" -Version {3}", nuspecFile, tempPath, outputDir, version);
+            StringBuilder commandLine = new StringBuilder();
 
 
-            Log.LogMessage(MessageImportance.Low, "NuGet.exe path: {0} ", nugetPath);
-            Log.LogMessage(MessageImportance.Low, "Running NuGet.exe with command line arguments: {0}" + commandLine);
+            string nupkgTempDirectory = CreateTempDirectory();
+            try
+            {
+                commandLine.AppendFormat(CultureInfo.InvariantCulture,
+                    "pack \"{0}\"  -NoPackageAnalysis -BasePath \"{1}\" -OutputDirectory \"{2}\" -Version {3}", nuspecFile, tempPath, nupkgTempDirectory, version);
+
+                foreach (var fileName in Directory.GetFiles(nupkgTempDirectory))
+                    File.Move(fileName, Path.Combine(outputDir, Path.GetFileName(fileName)));
+
+                string propertiesString = BuildPropertiesString();
+                if (!string.IsNullOrWhiteSpace(propertiesString))
+                    commandLine.AppendFormat(CultureInfo.InvariantCulture, " -Properties {0}", propertiesString);
+
+                Log.LogMessage(MessageImportance.Low, "NuGet.exe path: {0} ", nugetPath);
+
+                if (!RunNuget(commandLine.ToString())) return false;
+
+                string pushCommandLine = CreatePushCommandLine(nupkgTempDirectory);
+                if (!string.IsNullOrWhiteSpace(pushCommandLine))
+                {
+                    if (!RunNuget(pushCommandLine)) return false;
+                }
+
+                return true;
+            }
+            finally
+            {
+                TryRemoveTempDirectory(nupkgTempDirectory);
+            }
+        }
+
+        private string CreatePushCommandLine(string packageDirectory)
+        {
+
+            if (!string.IsNullOrWhiteSpace(PushLocation))
+            {
+                StringBuilder sb = new StringBuilder("push ");
+                string packageFileName = Directory.GetFiles(packageDirectory, "*.nupkg").Single();
+                sb.Append(packageFileName);
+                if (!string.IsNullOrWhiteSpace(ApiKey))
+                {
+                    sb.AppendFormat(CultureInfo.InvariantCulture, " -ApiKey {0}", ApiKey);
+                }
+                sb.AppendFormat(CultureInfo.InvariantCulture, " -Source \"{0}\"", PushLocation);
+          
+                return sb.ToString();
+            }
+            else
+                return null;
+        }
+        private bool RunNuget(string commandLine)
+        {
+            Log.LogMessage(MessageImportance.Low, "Running NuGet.exe with command line arguments: {0}", commandLine);
 
             var exitCode = SilentProcessRunner.ExecuteCommand(
                 nugetPath,
@@ -100,20 +188,26 @@ namespace Cms.Buildeploy.Tasks
                 Log.LogError("There was an error calling NuGet. Please see the output above for more details. Command line: '{0}' {1}", nugetPath, commandLine);
                 return false;
             }
+
             return true;
         }
 
         public void Dispose()
         {
-            if (Directory.Exists(tempPath))
+            TryRemoveTempDirectory(tempPath);
+
+        }
+
+        private static void TryRemoveTempDirectory(string tempDirectory)
+        {
+            if (Directory.Exists(tempDirectory))
             {
                 try
                 {
-                    Directory.Delete(tempPath, true);
+                    Directory.Delete(tempDirectory, true);
                 }
                 catch (IOException) { }
             }
-
         }
     }
 

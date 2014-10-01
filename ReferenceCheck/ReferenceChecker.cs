@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using System.IO;
+using System.Linq;
 
 namespace Cms.Buildeploy.ReferenceCheck
 {
@@ -15,21 +16,45 @@ namespace Cms.Buildeploy.ReferenceCheck
         private AssemblyCollection excludedAssemblies = new AssemblyCollection();
         private MissingAssemblyCollection reportedAssemblies = new MissingAssemblyCollection();
         private const string frameworkLibResourceName = "Cms.Buildeploy.FrameworkAssemblies.txt";
+        private static IList<AssemblyName> frameworkAssemblyNames;
+
         public ReferenceChecker()
         {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream(frameworkLibResourceName))
+            foreach (var asssemblyName in FrameworkAssemblyNames)
+                excludedAssemblies.Add(asssemblyName);
+        }
+
+
+        private static IList<AssemblyName> FrameworkAssemblyNames
+        {
+            get
             {
-                using (StreamReader reader = new StreamReader(stream))
+                if (frameworkAssemblyNames == null)
                 {
-                    while (!reader.EndOfStream)
+
+                    List<AssemblyName> names = new List<AssemblyName>();
+                    Assembly assembly = Assembly.GetExecutingAssembly();
+
+                    using (Stream stream = assembly.GetManifestResourceStream(frameworkLibResourceName))
                     {
-                        string line = reader.ReadLine().Trim();
-                        if (!string.IsNullOrEmpty(line))
-                            excludedAssemblies.Add(new AssemblyName(line));
+                        using (StreamReader reader = new StreamReader(stream))
+                        {
+                            while (!reader.EndOfStream)
+                            {
+                                string line = reader.ReadLine().Trim();
+                                if (!string.IsNullOrEmpty(line))
+                                    names.Add(new AssemblyName(line));
+                            }
+                        }
                     }
+                    frameworkAssemblyNames = names.AsReadOnly();
                 }
+                return frameworkAssemblyNames;
             }
+        }
+        internal static bool IsFrameworkAssembly(AssemblyName assemblyName)
+        {
+            return FrameworkAssemblyNames.Any(an => string.Equals(an.FullName, assemblyName.FullName, StringComparison.OrdinalIgnoreCase));
         }
 
         internal string RootPath
