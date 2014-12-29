@@ -144,10 +144,19 @@ namespace Cms.Buildeploy.Tasks
                 string pushCommandLine = CreatePushCommandLine(packageFileName);
                 if (!string.IsNullOrWhiteSpace(pushCommandLine))
                 {
+                    Log.LogMessage(MessageImportance.Normal, "Pushing package {0} to {1}", Path.GetFileName(packageFileName), PushLocation);
                     if (!RunNuget(pushCommandLine)) return false;
+                    Log.LogMessage(MessageImportance.Normal, "Push complete.");
                 }
 
-                File.Copy(packageFileName, Path.Combine(outputDir, Path.GetFileName(packageFileName)));
+                string destFileName = Path.Combine(outputDir, Path.GetFileName(packageFileName));
+                if (File.Exists(destFileName))
+                {
+                    Log.LogError("Cannot copy package to '{0}', file already exists.", destFileName);
+                    return false;
+                }
+                File.Copy(packageFileName, destFileName);
+                Log.LogMessage(MessageImportance.Normal, "Created package '{0}'", destFileName);
                 return true;
             }
             finally

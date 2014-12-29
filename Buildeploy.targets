@@ -61,7 +61,7 @@
     </PropertyGroup>
 
     <RemoveDir Directories="$(CompileOutputFolder)" />
-
+    <Copy SourceFiles="@(ReferenceFile)" DestinationFiles="$(CompileOutputFolder)"/>
     <MakeDir  Directories="$(CompileOutputFolder)" />
 
     <MSBuild Projects="@(ProjectToBuild)"
@@ -326,7 +326,7 @@
 
   <Target Name="RedistProjects">
     <MSBuild Projects="@(RedistProject)"
-            Properties="Configuration=%(Configuration.Identity);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL);NugetExe=$(NugetExe);SkipBuild=True;RedistRoot=$(RedistRoot);VersionPattern=*.*.*.*"
+            Properties="Configuration=%(Configuration.Identity);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL);NugetExe=$(NugetExe);SkipBuild=True;RedistRoot=$(RedistRoot);VersionPattern=*.*.*.*;BuildDefinition=$(BuildDefinition)"
             StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="RedistBinaries;PrecompileWeb;OctoPackage;ClickOnce;"/>
   </Target>
   <Target Name="AfterWebsiteCompiled" />
