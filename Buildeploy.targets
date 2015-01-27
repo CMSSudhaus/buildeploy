@@ -61,7 +61,7 @@
     </PropertyGroup>
 
     <RemoveDir Directories="$(CompileOutputFolder)" />
-    <Copy SourceFiles="@(ReferenceFile)" DestinationFiles="$(CompileOutputFolder)"/>
+    <Copy SourceFiles="@(ReferenceFile)" DestinationFolder="$(CompileOutputFolder)"/>
     <MakeDir  Directories="$(CompileOutputFolder)" />
 
     <MSBuild Projects="@(ProjectToBuild)"
