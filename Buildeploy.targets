@@ -78,12 +78,14 @@
 
     <ItemGroup>
       <LibLocalizationItems Include="$(LibPath)\%(LocalizationCulture.FileName)\*.dll"/>
+      <AdditionalLocalizationItems Include="$(LocalizationFilesPath)\%(LocalizationCulture.FileName)\*.dll"/>
       <LocalizationItems Include="$(CompileOutput)\%(LocalizationCulture.FileName)\*.dll"/>
     </ItemGroup>
     <MakeDir Directories="$(TempClientRedist)\%(LocalizationCulture.FileName)"/>
 
     <Copy SourceFiles="@(LibLocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)" />
     <Copy SourceFiles="@(LocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)"/>
+    <Copy SourceFiles="@(AdditionalLocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)"/>
   </Target>
 
   <Target Name="CopyLocalizationFiles">
@@ -207,7 +209,8 @@
     <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(OctoConfig.Identity)_$(Version).zip"
           DestinationFolder="%(OctoConfig.DeployCopyPath)"
           Condition="%(OctoConfig.DeployCopyPath)!=''"/>
-
+		<Exec Command="$(OctoExePath) create-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --version $(Version) --packageversion $(Version) --releasenotes &quot;%(OctoConfig.ReleaseNotes)&quot;"/>
+		<Exec Command="$(OctoExePath) deploy-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --deployto=%(OctoConfig.DeployEnviroment) --version $(Version) --waitfordeployment"/>
     <ItemGroup>
       <ServerRedistFiles Include="$(VersionRedistRoot)\Server\*.*"/>
     </ItemGroup>
