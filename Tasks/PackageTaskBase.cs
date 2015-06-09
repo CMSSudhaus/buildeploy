@@ -52,7 +52,6 @@ namespace Cms.Buildeploy.Tasks
 
         public string CertificatePassword { get; set; }
 
-        [Required]
         public ITaskItem Certificate { get; set; }
 
         public string EntryPoint { get; set; }
@@ -222,8 +221,6 @@ namespace Cms.Buildeploy.Tasks
         private ApplicationManifest CreateApplicationManifest(out string configFileName)
         {
 
-#if !Framework35
-
             string frameworkVersion;
             if (string.IsNullOrEmpty(TargetFramework))
                 frameworkVersion = "3.5";
@@ -233,9 +230,7 @@ namespace Cms.Buildeploy.Tasks
                 frameworkVersion = fn.Version.ToString();
             }
             ApplicationManifest manifest = new ApplicationManifest(frameworkVersion);
-#else
-            ApplicationManifest manifest = new ApplicationManifest();
-#endif
+
             manifest.IsClickOnceManifest = true;
             manifest.IconFile = IconFile;
             configFileName = null;
@@ -314,6 +309,7 @@ namespace Cms.Buildeploy.Tasks
             manifest.TrustInfo = trust;
             if (manifest.EntryPoint == null)
                 Log.LogError("Cannot determine EntryPoint. EntryPoint property = '{0}'", EntryPoint ?? string.Empty);
+            
             return manifest;
         }
 
@@ -420,7 +416,7 @@ namespace Cms.Buildeploy.Tasks
         public override bool Execute()
         {
             //If no ClickOnce files, compressing the website only.
-            if (Files.Length == 0 || SkipClickOnce)
+            if (Files == null || Files.Length == 0 || SkipClickOnce)
             {
                 CompressFiles(null);
                 return true;
@@ -446,7 +442,6 @@ namespace Cms.Buildeploy.Tasks
             try
             {
                 ManifestWriter.WriteManifest(appManifest, appManifestTempFileName);
-                SecureString pwd = new SecureString();
                 SecurityUtilities.SignFile(Certificate.ItemSpec, GetCertPassword(), null, appManifestTempFileName);
 
                 DeployManifest deployManifest = CreateDeployManifest(appManifest, appManifestTempFileName, appManifestFileName);

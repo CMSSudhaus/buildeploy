@@ -9,7 +9,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Build and deployment scripts for packaging .net solutions</description>
     <releaseNotes></releaseNotes>
-    <copyright>Copyright 2014 (c) CMS Sudhaus &amp; Partner GmbH</copyright>
+    <copyright>Copyright 2014-2015 (c) CMS Sudhaus &amp; Partner GmbH</copyright>
     <tags>Build Deploy</tags>
   </metadata>
   <files>

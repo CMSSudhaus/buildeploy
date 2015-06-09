@@ -157,10 +157,10 @@
     <Error Condition="$(NugetExe)==''" Text="Property 'NugetExe' is not specified."/>
     <Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
     <Error Condition="$(Version)==''" Text="Property 'Version' is not specified."/>
-    <Error Condition="$(ClickOnceCertificate)==''" Text="Property 'ClickOnceCertificate' is not specified."/>
-    <Error Condition="$(ClickOnceEntryPoint)==''" Text="Property 'ClickOnceEntryPoint' is not specified."/>
-    <Error Condition="$(ProductName)==''" Text="Property 'ProductName' is not specified."/>
-    <Error Condition="$(Publisher)==''" Text="Property 'Publisher' is not specified."/>
+    <Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(ClickOnceCertificate)==''" Text="Property 'ClickOnceCertificate' is not specified."/>
+    <Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(ClickOnceEntryPoint)==''" Text="Property 'ClickOnceEntryPoint' is not specified."/>
+    <Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(ProductName)==''" Text="Property 'ProductName' is not specified."/>
+    <Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(Publisher)==''" Text="Property 'Publisher' is not specified."/>
 
 
     <ItemGroup Condition="@(ClientRedistFiles)==''">
@@ -209,8 +209,7 @@
     <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(OctoConfig.Identity)_$(Version).zip"
           DestinationFolder="%(OctoConfig.DeployCopyPath)"
           Condition="%(OctoConfig.DeployCopyPath)!=''"/>
-		<Exec Command="$(OctoExePath) create-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --version $(Version) --packageversion $(Version) --releasenotes &quot;%(OctoConfig.ReleaseNotes)&quot;"/>
-		<Exec Command="$(OctoExePath) deploy-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --deployto=%(OctoConfig.DeployEnviroment) --version $(Version) --waitfordeployment"/>
+	
     <ItemGroup>
       <ServerRedistFiles Include="$(VersionRedistRoot)\Server\*.*"/>
     </ItemGroup>
@@ -220,6 +219,22 @@
   </Target>
 
 
+  <Target Name="OctoDeploy" Inputs="@(OctoConfig)" Outputs="NotUsedOutput">
+    <PropertyGroup>
+      <PackagesDirPath>$(VersionRedistRoot)\Packages</PackagesDirPath>
+    </PropertyGroup>
+    <MakeDir Directories="$(PackagesDirPath)"/>
+    <Error Condition="$(NugetExe)==''" Text="Property 'NugetExe' is not specified."/>
+    <Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
+    <Error Condition="$(Version)==''" Text="Property 'Version' is not specified."/>
+
+    <Exec
+      Command="$(OctoExePath) create-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --version $(Version) --packageversion $(Version) --releasenotes &quot;%(OctoConfig.ReleaseNotes)&quot;"
+      Condition="%(OctoConfig.OctopusProject)!=''"/>
+    <Exec
+      Command="$(OctoExePath) deploy-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --deployto=%(OctoConfig.DeployEnviroment) --version $(Version) --waitfordeployment"
+      Condition="%(OctoConfig.DeployEnviroment)!=''"/>
+  </Target>
   <Target Name="BeforeRedistBinaries"/>
   <Target Name="AfterRedistBinaries"/>
 
@@ -247,7 +262,7 @@
     <Message Text="$(VersionPattern)"/>
 
     <PropertyGroup>
-      <BuildVersionPattern Condition="BuildLabel!=''"></BuildVersionPattern>
+      <BuildVersionPattern Condition="$(BuildLabel) != ''"></BuildVersionPattern>
       <GenerateVersionPrefix Condition="$(VersionPrefix) == ''">*.*</GenerateVersionPrefix>
       <GenerateVersionPrefix Condition="$(VersionPrefix) != ''">$(VersionPrefix)</GenerateVersionPrefix>
     </PropertyGroup>
@@ -378,7 +393,7 @@
     <!--<Zip Files="@(CompiledSite)" WorkingDirectory="Temp\Compiledsite" ZipFileName="$(VersionRedistRoot)\Site-v$(Version).zip" />-->
   </Target>
 
-  <Target Name="Redist" DependsOnTargets="RedistBinaries;PrecompileWeb;ClickOnce;OctoPackage;RedistProjects;AfterRedistBinaries;" >
+  <Target Name="Redist" DependsOnTargets="RedistBinaries;PrecompileWeb;ClickOnce;OctoPackage;RedistProjects;AfterRedistBinaries;OctoDeploy" >
     <RemoveDir Directories="$(TempRedistRoot)"/>
   </Target>
 </Project>
