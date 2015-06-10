@@ -18,6 +18,6 @@
 
 
     <MakeDir Directories="bin\nuget"/>
-    <Exec ContinueOnError="false" Command="$(NuGetTool) pack Buildeploy.nuspec -BasePath $(MSBuildProjectDirectory) -OutputDirectory bin\NuGet -Version $(Version) -Properties SourceDir=bin\debug"/>
+    <Exec ContinueOnError="false" Command="$(NuGetTool) pack nuspec\Buildeploy.nuspec -BasePath $(MSBuildProjectDirectory) -OutputDirectory bin\NuGet -Version $(Version) -Properties SourceDir=bin\debug"/>
   </Target>
 </Project>

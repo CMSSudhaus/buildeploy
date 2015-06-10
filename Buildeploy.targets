@@ -46,7 +46,7 @@
   <Target Name="BeforeBuild">
   </Target>
   <Target Name="Build"
-        DependsOnTargets="Configurations"
+        DependsOnTargets="Configurations;NugetRestore"
         Inputs="@(Configuration)"
         Outputs="target\%(Configuration.FileName)">
 
@@ -219,6 +219,15 @@
   </Target>
 
 
+  <ItemGroup>
+    <PackagesConfig Include="**\packages.config"/>
+  </ItemGroup>
+
+  <Target Name="NugetRestore" Inputs="@(PackagesConfig)" Outputs="NotUsedOutput" Condition="$(NugetExe)!=''">
+    <Error Condition="$(NugetPackagesSource)==''" Text="Property 'NugetPackagesSource' is not specified."/>
+    <Exec Command="$(NugetExe) restore %(PackagesConfig.FullPath) -Source $(NugetPackagesSource) -PackagesDirectory $(MSBuildProjectDirectory)\packages" />
+  </Target>
+  
   <Target Name="OctoDeploy" Inputs="@(OctoConfig)" Outputs="NotUsedOutput">
     <PropertyGroup>
       <PackagesDirPath>$(VersionRedistRoot)\Packages</PackagesDirPath>
