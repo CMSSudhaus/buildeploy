@@ -204,6 +204,7 @@
 				PackageId="%(OctoConfig.PackageId)"
 				PushLocation="%(OctoConfig.PushLocation)"
 				ApiKey="%(OctoConfig.ApiKey)"
+				NoDefaultExcludes="%(OctoConfig.NoDefaultExcludes)"
 				Condition="'%(OctoConfig.NuspecFile)'!=''"
 			/>
 
@@ -215,17 +216,6 @@
 
 		<Exec Command="$(NugetExe) push $(PackagesDirPath)\%(OctoConfig.Identity).$(Version).symbols.nupkg -Source %(OctoConfig.SymbolsPushLocation) %(OctoConfig.SymbolsApiKey)"
 			  Condition="'%(OctoConfig.ProjectFile)'!='' and '%(OctoConfig.SymbolsPushLocation)'!='' and Exists('$(PackagesDirPath)\%(OctoConfig.Identity).$(Version).symbols.nupkg')" />
-
-		<Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(OctoConfig.Identity)_$(Version).zip"
-			  DestinationFolder="%(OctoConfig.DeployCopyPath)"
-			  Condition="%(OctoConfig.DeployCopyPath)!=''"/>
-
-		<ItemGroup>
-			<ServerRedistFiles Include="$(VersionRedistRoot)\Server\*.*"/>
-		</ItemGroup>
-		<Copy SourceFiles="@(ServerRedistFiles)"
-				  DestinationFolder="%(OctoConfig.ServerDeployCopyPath)"
-				  Condition="%(OctoConfig.ServerDeployCopyPath)!=''"/>
 	</Target>
 
 
