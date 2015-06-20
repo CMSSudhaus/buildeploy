@@ -296,10 +296,6 @@
 
 		<Error Condition="$(RedistRoot)==''" Text="RedistRoot or CustomRedistRoot properties are not specified."/>
 
-		<!--
-		<CallTarget Targets="UpdateVersion" />
-		-->
-
 		<RemoveDir Directories="$(TempRedistRoot)"/>
 		<CallTarget Targets="Build" Condition="$(SkipBuild) != true"/>
 
