@@ -69,8 +69,12 @@ namespace Cms.Buildeploy.Tasks
         }
         private void AddReferences(string fileName, HashSet<string> resultFileNames, HashSet<string> visited)
         {
+            if (Path.GetFileName(fileName).Equals("mscorlib.dll", StringComparison.OrdinalIgnoreCase))
+                return;
+
             if (visited.Contains(fileName))
                 return;
+
             visited.Add(fileName);
 
             if (!resultFileNames.Contains(fileName))

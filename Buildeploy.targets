@@ -223,9 +223,11 @@
     <PackagesConfig Include="**\packages.config"/>
   </ItemGroup>
 
-  <Target Name="NugetRestore" Inputs="@(PackagesConfig)" Outputs="NotUsedOutput" Condition="$(NugetExe)!=''">
-    <Error Condition="$(NugetPackagesSource)==''" Text="Property 'NugetPackagesSource' is not specified."/>
-    <Exec Command="$(NugetExe) restore %(PackagesConfig.FullPath) -Source $(NugetPackagesSource) -PackagesDirectory $(MSBuildProjectDirectory)\packages" />
+  <Target Name="NugetRestore" Inputs="@(PackagesConfig)" Outputs="NotUsedOutput" Condition="$(NugetExe)!='' and $(NugetPackagesSource)!=''">
+	<PropertyGroup>
+		<NoCacheOption Condition="$(NugetRestoreNoCache)==true">-NoCache</NoCacheOption>
+	</PropertyGroup>
+    <Exec Command="$(NugetExe) restore %(PackagesConfig.FullPath) -Source $(NugetPackagesSource) -PackagesDirectory $(MSBuildProjectDirectory)\packages $(NoCacheOption)"  />
   </Target>
   
   <Target Name="OctoDeploy" Inputs="@(OctoConfig)" Outputs="NotUsedOutput">
