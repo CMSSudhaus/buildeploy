@@ -48,7 +48,7 @@
 	<Target Name="Build"
 		  DependsOnTargets="Configurations;NugetRestore"
 		  Inputs="@(Configuration)"
-		  Outputs="target\%(Configuration.FileName)">
+		  Outputs="target\%(Configuration.Identity)">
 
 
 
@@ -296,14 +296,10 @@
 
 		<Error Condition="$(RedistRoot)==''" Text="RedistRoot or CustomRedistRoot properties are not specified."/>
 
-		<!--
-		<CallTarget Targets="UpdateVersion" />
-		-->
-
 		<RemoveDir Directories="$(TempRedistRoot)"/>
+
 		<CallTarget Targets="Build" Condition="$(SkipBuild) != true"/>
 
-		<MakeDir Directories="$(TempRedistRoot)\Client"/>
 
 		<NUnit Assemblies="@(NUnitAssembly)" ToolPath="$(LibPath)" Condition="@(NUnitAssembly)!=''" WorkingDirectory="bin\$(RedistConfiguration)"/>
 		<PropertyGroup>
@@ -319,12 +315,42 @@
 		  WorkingDirectory="bin\$(RedistConfiguration)"
 		  Category="$(MSTestCategory)"/>
 
+		<CallTarget Targets="PrepareLocalFiles" />
+
+		<CallTarget Targets="CopyRedistFiles" />
+	</Target>
+	
+	<Target Name="CopyRedistFiles">
+	
+		<MakeDir Directories="$(VersionRedistRoot)"/>
+		
+		<ItemGroup Condition="@(ClientRedistFiles)==''">
+			<ClientRedistFiles Include="$(TempClientRedist)\**"/>
+		</ItemGroup>
+
+		<Copy SourceFiles="@(ClientRedistFiles)" DestinationFolder="$(VersionRedistRoot)\Client"/>
+
+		<ItemGroup Condition="@(ServerRedistFiles)==''">
+			<ServerRedistFiles Include="$(TempServerRedist)\**"/>
+		</ItemGroup>
+		<Copy SourceFiles="@(ServerRedistFiles)" DestinationFolder="$(VersionRedistRoot)\Server"/>
+		<!--<Zip Files="@(ClientRedistFiles)" WorkingDirectory="$(TempClientRedist)" ZipFileName="$(VersionRedistRoot)\Client-v$(Version).zip" />
+	<Zip Files="@(ServerRedistFiles)" WorkingDirectory="$(TempServerRedist)" ZipFileName="$(VersionRedistRoot)\Server-v$(Version).zip" />-->
+	</Target>
+	
+	<Target Name="PrepareLocalFiles">
+		<MakeDir Directories="$(TempClientRedist)"/>
+
 		<ResolveRedistAssemblies Files="@(ClientRedistFile)" LookUpPath="$(CompileOutput)">
 			<Output TaskParameter="Result" ItemName="RedistPath"/>
 		</ResolveRedistAssemblies>
 
 		<ResolveRedistAssemblies Files="@(ServerRedistFile)" LookUpPath="$(CompileOutput)">
 			<Output TaskParameter="Result" ItemName="ServerRedistPath"/>
+		</ResolveRedistAssemblies>
+
+		<ResolveRedistAssemblies Files="@(ServerDependency)" LookUpPath="$(CompileOutput)">
+			<Output TaskParameter="Result" ItemName="ServerDependencyRedistPath"/>
 		</ResolveRedistAssemblies>
 
 		<AssignTargetPath Files="@(RedistPath)" RootFolder="$(CompileOutput)">
@@ -341,21 +367,10 @@
 
 		<Copy SourceFiles="@(ServerLibPath)" DestinationFolder="$(TempServerRedist)"/>
 		<Copy SourceFiles="@(ServerRedistPath)" DestinationFolder="$(TempServerRedist)"/>
-		<Copy SourceFiles="@(ServerDependency)" DestinationFolder="$(TempServerRedist)"/>
+		<Copy SourceFiles="@(ServerDependencyRedistPath)" DestinationFolder="$(TempServerRedist)"/>
 		<Copy SourceFiles="@(ServerLibDependencyPath)" DestinationFolder="$(TempServerRedist)"/>
 
 		<CheckReferences Path="$(TempServerRedist)" MessageInfo="Server" Excludes="@(CheckReferenceExclude)"/>
-		<MakeDir Directories="$(VersionRedistRoot)"/>
-		<ItemGroup>
-			<ClientRedistFiles Include="$(TempClientRedist)\**"/>
-			<ServerRedistFiles Include="$(TempServerRedist)\**"/>
-		</ItemGroup>
-
-		<Copy SourceFiles="@(RedistFiles)" DestinationFolder="$(VersionRedistRoot)\%(RecursiveDir)"/>
-		<!--<Zip Files="@(ClientRedistFiles)" WorkingDirectory="$(TempClientRedist)" ZipFileName="$(VersionRedistRoot)\Client-v$(Version).zip" />
-	<Zip Files="@(ServerRedistFiles)" WorkingDirectory="$(TempServerRedist)" ZipFileName="$(VersionRedistRoot)\Server-v$(Version).zip" />-->
-
-
 	</Target>
 
 	<Target Name="RedistProjects">
