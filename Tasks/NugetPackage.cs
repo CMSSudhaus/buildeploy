@@ -43,7 +43,10 @@ namespace Cms.Buildeploy.Tasks
         {
             var archive = new NugetArchive(NugetExePath, Path.GetFullPath(NuspecFile), OutputDirectory, Version, Log);
             if (!string.IsNullOrWhiteSpace(PackageId))
+            { 
                 archive.AddProperty("Id", PackageId);
+                archive.AddProperty("PackageId", PackageId);
+            }
 
             archive.ApiKey = ApiKey;
             archive.PushLocation = PushLocation;
