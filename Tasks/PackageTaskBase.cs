@@ -45,7 +45,7 @@ namespace Cms.Buildeploy.Tasks
 
         public string WebsiteBasePath { get; set; }
 
-        public string Url { get; set; }
+        public ITaskItem[] Urls { get; set; }
 
         public ITaskItem ConfigFile { get; set; }
 
@@ -54,7 +54,7 @@ namespace Cms.Buildeploy.Tasks
 
         public ITaskItem Certificate { get; set; }
 
-        public string EntryPoint { get; set; }
+        public ITaskItem[] EntryPoints { get; set; }
 
         [Required]
         public ITaskItem[] Files { get; set; }
@@ -103,7 +103,7 @@ namespace Cms.Buildeploy.Tasks
                 return entryName;
         }
 
-        private bool CompressFiles(PackageFileInfo[] additionalFiles)
+        private bool CompressFiles(IList<PackageFileInfo> additionalFiles)
         {
             using (IPackageArchive package = CreatePackageArchive())
             {
@@ -218,7 +218,7 @@ namespace Cms.Buildeploy.Tasks
         }
         #endregion
 
-        private ApplicationManifest CreateApplicationManifest(out string configFileName)
+        private ApplicationManifest CreateApplicationManifest(string entryPoint, out string configFileName)
         {
 
             string frameworkVersion;
@@ -280,7 +280,7 @@ namespace Cms.Buildeploy.Tasks
                     asmRef.AssemblyIdentity = identity;
                     manifest.AssemblyReferences.Add(asmRef);
                     if (manifest.EntryPoint == null &&
-                        (string.IsNullOrEmpty(EntryPoint) || string.Equals(EntryPoint, fileName, StringComparison.InvariantCultureIgnoreCase)) &&
+                        (string.IsNullOrEmpty(entryPoint) || string.Equals(entryPoint, fileName, StringComparison.InvariantCultureIgnoreCase)) &&
                         Path.GetExtension(fileName).Equals(".exe", StringComparison.InvariantCultureIgnoreCase))
                     {
                         configFileName = SetEntryPointAndConfig(manifest, filePath, asmRef);
@@ -308,8 +308,8 @@ namespace Cms.Buildeploy.Tasks
             trust.IsFullTrust = true;
             manifest.TrustInfo = trust;
             if (manifest.EntryPoint == null)
-                Log.LogError("Cannot determine EntryPoint. EntryPoint property = '{0}'", EntryPoint ?? string.Empty);
-            
+                Log.LogError("Cannot determine EntryPoint. EntryPoint property = '{0}'", entryPoint ?? string.Empty);
+
             return manifest;
         }
 
@@ -339,7 +339,7 @@ namespace Cms.Buildeploy.Tasks
 
         private static bool HasEmbeddedManifest(string fileName)
         {
-            
+
             Type manifestType = typeof(System.Deployment.Application.ApplicationDeployment).Assembly.GetType("System.Deployment.Application.Manifest.AssemblyManifest");
             try
             {
@@ -356,18 +356,15 @@ namespace Cms.Buildeploy.Tasks
                 return false;
             }
         }
-        
+
         private DeployManifest CreateDeployManifest(ApplicationManifest applicationManifest, string applicationManifestPath,
-            string applicationManifestName)
+            string applicationManifestName, string url)
         {
-#if !Framework35
 
             DeployManifest manifest = new DeployManifest(TargetFramework);
-#else
-            DeployManifest manifest = new DeployManifest();
-#endif
-            if (string.IsNullOrWhiteSpace(Url))
-                manifest.DeploymentUrl = Url;
+
+            if (!string.IsNullOrWhiteSpace(url))
+                manifest.DeploymentUrl = url;
 
             manifest.MapFileExtensions = true;
             manifest.Publisher = Publisher;
@@ -375,10 +372,7 @@ namespace Cms.Buildeploy.Tasks
             manifest.TrustUrlParameters = UrlParameters;
             manifest.Install = Install;
             manifest.MinimumRequiredVersion = MinimumRequiredVersion;
-#if !Framework35
-
             manifest.CreateDesktopShortcut = CreateDesktopShortcut;
-#endif
 
             if (RequireLatestVersion)
                 manifest.MinimumRequiredVersion = Version;
@@ -422,11 +416,34 @@ namespace Cms.Buildeploy.Tasks
                 return true;
             }
 
+            List<PackageFileInfo> additionalFiles = new List<PackageFileInfo>();
+            List<string> filesToDelete = new List<string>();
+            for (int i = 0; i < EntryPoints.Length; i++)
+            {
+                if (!CreateManifests(EntryPoints[i].ItemSpec, Urls[i].ItemSpec, additionalFiles, filesToDelete))
+                    return false;
+            }
+
+            try
+            {
+                CompressFiles(additionalFiles);
+            }
+            finally
+            {
+                foreach (var fn in filesToDelete)
+                    File.Delete(fn);
+            }
+
+            return true;
+        }
+
+        private bool CreateManifests(string entryPoint, string url, List<PackageFileInfo> additionalFiles, List<string> filesToDelete)
+        {
             string configFileName;
             ApplicationManifest appManifest;
             try
             {
-                appManifest = CreateApplicationManifest(out configFileName);
+                appManifest = CreateApplicationManifest(entryPoint, out configFileName);
             }
             catch (DuplicateAssemblyReferenceException ex)
             {
@@ -439,36 +456,31 @@ namespace Cms.Buildeploy.Tasks
             string deployManifestTempFileName = Path.GetTempFileName();
             string appManifestTempFileName = Path.GetTempFileName();
 
-            try
+            ManifestWriter.WriteManifest(appManifest, appManifestTempFileName);
+            SecurityUtilities.SignFile(Certificate.ItemSpec, GetCertPassword(), null, appManifestTempFileName);
+
+            DeployManifest deployManifest = CreateDeployManifest(
+                appManifest,
+                appManifestTempFileName,
+                appManifestFileName,
+                url);
+
+
+            ManifestWriter.WriteManifest(deployManifest, deployManifestTempFileName);
+            SecurityUtilities.SignFile(Certificate.ItemSpec, GetCertPassword(), null, deployManifestTempFileName);
+
+            additionalFiles.Add(new PackageFileInfo(appManifestTempFileName, appManifestFileName));
+            additionalFiles.Add(new PackageFileInfo(deployManifestTempFileName, deployManifestFileName));
+
+            filesToDelete.Add(appManifestTempFileName);
+            filesToDelete.Add(deployManifestTempFileName);
+            if (ConfigFile != null && !string.IsNullOrEmpty(configFileName))
             {
-                ManifestWriter.WriteManifest(appManifest, appManifestTempFileName);
-                SecurityUtilities.SignFile(Certificate.ItemSpec, GetCertPassword(), null, appManifestTempFileName);
-
-                DeployManifest deployManifest = CreateDeployManifest(appManifest, appManifestTempFileName, appManifestFileName);
-                ManifestWriter.WriteManifest(deployManifest, deployManifestTempFileName);
-                SecurityUtilities.SignFile(Certificate.ItemSpec, GetCertPassword(), null, deployManifestTempFileName);
-
-                List<PackageFileInfo> additionalFiles = new List<PackageFileInfo>();
-                additionalFiles.Add(new PackageFileInfo(appManifestTempFileName, appManifestFileName));
-                additionalFiles.Add(new PackageFileInfo(deployManifestTempFileName, deployManifestFileName));
-
-                if (ConfigFile != null && !string.IsNullOrEmpty(configFileName))
-                {
-                    additionalFiles.Add(new PackageFileInfo(ConfigFile.ItemSpec, CombineWithWebsite ? AddDeploySuffix(configFileName) : configFileName));
-                }
-
-                return CompressFiles(additionalFiles.ToArray());
-
-            }
-            finally
-            {
-                File.Delete(deployManifestTempFileName);
-                File.Delete(appManifestTempFileName);
+                additionalFiles.Add(new PackageFileInfo(ConfigFile.ItemSpec, CombineWithWebsite ? AddDeploySuffix(configFileName) : configFileName));
             }
 
+            return true;
         }
-
-
     }
 
     public interface IPackageFileEntry
