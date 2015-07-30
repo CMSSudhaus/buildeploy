@@ -45,7 +45,7 @@ namespace Cms.Buildeploy.Tasks
 
         public string WebsiteBasePath { get; set; }
 
-        public ITaskItem[] Urls { get; set; }
+        public string BaseUrl { get; set; }
 
         public ITaskItem ConfigFile { get; set; }
 
@@ -420,7 +420,7 @@ namespace Cms.Buildeploy.Tasks
             List<string> filesToDelete = new List<string>();
             for (int i = 0; i < EntryPoints.Length; i++)
             {
-                if (!CreateManifests(EntryPoints[i].ItemSpec, Urls[i].ItemSpec, additionalFiles, filesToDelete))
+                if (!CreateManifests(EntryPoints[i].ItemSpec, additionalFiles, filesToDelete))
                     return false;
             }
 
@@ -437,7 +437,7 @@ namespace Cms.Buildeploy.Tasks
             return true;
         }
 
-        private bool CreateManifests(string entryPoint, string url, List<PackageFileInfo> additionalFiles, List<string> filesToDelete)
+        private bool CreateManifests(string entryPoint, List<PackageFileInfo> additionalFiles, List<string> filesToDelete)
         {
             string configFileName;
             ApplicationManifest appManifest;
@@ -458,12 +458,12 @@ namespace Cms.Buildeploy.Tasks
 
             ManifestWriter.WriteManifest(appManifest, appManifestTempFileName);
             SecurityUtilities.SignFile(Certificate.ItemSpec, GetCertPassword(), null, appManifestTempFileName);
-
+            string deploymentUrl = BuildDeploymentUrl(deployManifestFileName);
             DeployManifest deployManifest = CreateDeployManifest(
                 appManifest,
                 appManifestTempFileName,
                 appManifestFileName,
-                url);
+                deploymentUrl);
 
 
             ManifestWriter.WriteManifest(deployManifest, deployManifestTempFileName);
@@ -480,6 +480,20 @@ namespace Cms.Buildeploy.Tasks
             }
 
             return true;
+        }
+
+        private string BuildDeploymentUrl(string manifestFileName)
+        {
+            string baseUrl = BaseUrl;
+            if (!string.IsNullOrWhiteSpace(baseUrl))
+            {
+                if (!baseUrl.EndsWith("/", StringComparison.Ordinal))
+                    baseUrl += "/";
+
+                baseUrl += manifestFileName;
+            }
+
+            return baseUrl;
         }
     }
 
