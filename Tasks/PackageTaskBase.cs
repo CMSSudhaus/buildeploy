@@ -161,7 +161,7 @@ namespace Cms.Buildeploy.Tasks
                 string entryName;
 
                 // determine name of the zip entry
-                if (file.StartsWith(basePath))
+                if (file.StartsWith(basePath, StringComparison.OrdinalIgnoreCase))
                 {
                     entryName = file.Substring(basePath.Length);
                     if (entryName.Length > 0 && entryName[0] == Path.DirectorySeparatorChar)
@@ -486,20 +486,20 @@ namespace Cms.Buildeploy.Tasks
 
     class PackageFileInfo
     {
-        private string sourcePath;
-        private string destPath;
+        private readonly string sourcePath;
+        private readonly string destPath;
 
         public PackageFileInfo(string sourcePath, string destPath)
         {
-            if (sourcePath == null) throw new ArgumentNullException("sourcePath");
-            if (destPath == null) throw new ArgumentNullException("destPath");
+            if (sourcePath == null) throw new ArgumentNullException(nameof(sourcePath));
+            if (destPath == null) throw new ArgumentNullException(nameof(destPath));
 
             this.sourcePath = sourcePath;
             this.destPath = destPath;
         }
 
-        public string SourcePath { get { return sourcePath; } }
-        public string DestPath { get { return destPath; } }
+        public string SourcePath => sourcePath;
+        public string DestPath => destPath;
     }
 
 }

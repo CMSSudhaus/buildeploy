@@ -63,6 +63,7 @@ namespace Cms.Buildeploy.Tasks
         private readonly string version;
         private readonly string outputDir;
         private readonly Dictionary<string, string> properties = new Dictionary<string, string>();
+
         internal NugetArchive(string nugetPath, string nuspecFile, string outputDir, string version, TaskLoggingHelper log)
         {
             this.nugetPath = nugetPath;

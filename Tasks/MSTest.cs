@@ -19,11 +19,7 @@ namespace Cms.Buildeploy.Tasks
     /// </summary>
     public class MSTest : ToolTask
     {
-        public MSTest()
-        {
-            
-        }
-
+        
         public string MSTestExe { get; set; }
         protected override string GenerateFullPathToTool()
         {

@@ -18,7 +18,7 @@ namespace Cms.Buildeploy.Tasks
         protected override string ReplaceDirectorySeparators(string entryName)
         {
             if (entryName == null)
-                throw new ArgumentNullException("entryName");
+                throw new ArgumentNullException(nameof(entryName));
 
             if (Path.PathSeparator != '/')
                 return entryName.Replace(Path.PathSeparator, '/');

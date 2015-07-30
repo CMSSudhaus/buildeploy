@@ -7,10 +7,7 @@ namespace Cms.Buildeploy
 {
     public abstract class VersionChangerBase
     {
-        public VersionChangerBase()
-        {
-        }
-
+        
         protected abstract int Change(int version);
 
         public string Change(string version)
@@ -20,7 +17,7 @@ namespace Cms.Buildeploy
             {
                 intVersion = int.Parse(version);
             }
-            catch
+            catch(FormatException)
             {
                 return version;
             }
@@ -98,8 +95,8 @@ namespace Cms.Buildeploy
 
         public ChangeVersionParser(string version, ILogWriter logWriter)
         {
-            if (version == null) throw new ArgumentNullException("version");
-            if (logWriter == null) throw new ArgumentNullException("logWriter");
+            if (version == null) throw new ArgumentNullException(nameof(version));
+            if (logWriter == null) throw new ArgumentNullException(nameof(logWriter));
 
             this.logWriter = logWriter;
 
@@ -255,7 +252,7 @@ namespace Cms.Buildeploy
                 {
                     File.Delete(newFile);
                 }
-                catch { }
+                catch(IOException) { }
 
                 throw new InvalidOperationException("Cannot update file", ex);
             }
