@@ -39,6 +39,8 @@ namespace Cms.Buildeploy.Tasks
 
         public string Product { get; set; }
 
+        public bool UseAssemblyProductName { get; set; }
+
         public string Publisher { get; set; }
 
         public bool UseConfigName { get; set; }
@@ -218,9 +220,10 @@ namespace Cms.Buildeploy.Tasks
         }
         #endregion
 
-        private ApplicationManifest CreateApplicationManifest(string entryPoint, out string configFileName)
+        private ApplicationManifest CreateApplicationManifest(string entryPoint, out string configFileName, out string entryPointFilePath)
         {
 
+            entryPointFilePath = null;
             string frameworkVersion;
             if (string.IsNullOrEmpty(TargetFramework))
                 frameworkVersion = "3.5";
@@ -284,6 +287,7 @@ namespace Cms.Buildeploy.Tasks
                         Path.GetExtension(fileName).Equals(".exe", StringComparison.InvariantCultureIgnoreCase))
                     {
                         configFileName = SetEntryPointAndConfig(manifest, filePath, asmRef);
+                        entryPointFilePath = filePath;
                     }
                 }
                 else
@@ -358,7 +362,7 @@ namespace Cms.Buildeploy.Tasks
         }
 
         private DeployManifest CreateDeployManifest(ApplicationManifest applicationManifest, string applicationManifestPath,
-            string applicationManifestName, string url)
+            string applicationManifestName, string url, string entryPointFilePath)
         {
 
             DeployManifest manifest = new DeployManifest(TargetFramework);
@@ -368,7 +372,7 @@ namespace Cms.Buildeploy.Tasks
 
             manifest.MapFileExtensions = true;
             manifest.Publisher = Publisher;
-            manifest.Product = !string.IsNullOrEmpty(LocalProduct) ? LocalProduct : Product;
+            manifest.Product = GetProductName(entryPointFilePath);
             manifest.TrustUrlParameters = UrlParameters;
             manifest.Install = Install;
             manifest.MinimumRequiredVersion = MinimumRequiredVersion;
@@ -405,7 +409,29 @@ namespace Cms.Buildeploy.Tasks
             return manifest;
         }
 
+        private string GetProductName(string entryPointFilePath)
+        {
+            string productName = !string.IsNullOrEmpty(LocalProduct) ? LocalProduct : Product;
+
+            if (UseAssemblyProductName)
+            {
+                if (string.IsNullOrWhiteSpace(entryPointFilePath))
+                    throw new ArgumentException("Entrypoint not specified.", nameof(entryPointFilePath));
+
+
+                string assemblyProductName = AssemblyAttributeHelper.InvokeWithDomain(h => h.GetProductName(entryPointFilePath));
+                if (!string.IsNullOrWhiteSpace(assemblyProductName))
+                {
+                    return string.Format(CultureInfo.CurrentCulture, "{0} {1}", assemblyProductName, productName).Trim();
+                }
+            }
+
+            return productName;
+        }
+
         public bool SkipClickOnce { get; set; }
+
+        public string EntryPoint { get; set; }
 
         public override bool Execute()
         {
@@ -418,9 +444,18 @@ namespace Cms.Buildeploy.Tasks
 
             List<PackageFileInfo> additionalFiles = new List<PackageFileInfo>();
             List<string> filesToDelete = new List<string>();
-            for (int i = 0; i < EntryPoints.Length; i++)
+            if (EntryPoints != null && EntryPoints.Length > 0)
             {
-                if (!CreateManifests(EntryPoints[i].ItemSpec, additionalFiles, filesToDelete))
+                for (int i = 0; i < EntryPoints.Length; i++)
+                {
+                    if (!CreateManifests(EntryPoints[i].ItemSpec, additionalFiles, filesToDelete))
+                        return false;
+                }
+
+            }
+            else
+            {
+                if (!CreateManifests(EntryPoint, additionalFiles, filesToDelete))
                     return false;
             }
 
@@ -440,10 +475,11 @@ namespace Cms.Buildeploy.Tasks
         private bool CreateManifests(string entryPoint, List<PackageFileInfo> additionalFiles, List<string> filesToDelete)
         {
             string configFileName;
+            string entryPointFilePath;
             ApplicationManifest appManifest;
             try
             {
-                appManifest = CreateApplicationManifest(entryPoint, out configFileName);
+                appManifest = CreateApplicationManifest(entryPoint, out configFileName, out entryPointFilePath);
             }
             catch (DuplicateAssemblyReferenceException ex)
             {
@@ -463,7 +499,8 @@ namespace Cms.Buildeploy.Tasks
                 appManifest,
                 appManifestTempFileName,
                 appManifestFileName,
-                deploymentUrl);
+                deploymentUrl,
+                entryPointFilePath);
 
 
             ManifestWriter.WriteManifest(deployManifest, deployManifestTempFileName);

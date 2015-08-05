@@ -101,7 +101,6 @@
     <Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
     <Error Condition="$(Version)==''" Text="Property 'Version' is not specified."/>
     <Error Condition="$(ClickOnceCertificate)==''" Text="Property 'ClickOnceCertificate' is not specified."/>
-    <Error Condition="$(ClickOnceEntryPoint)==''" Text="Property 'ClickOnceEntryPoint' is not specified."/>
     <Error Condition="$(ProductName)==''" Text="Property 'ProductName' is not specified."/>
     <Error Condition="$(Publisher)==''" Text="Property 'Publisher' is not specified."/>
 
@@ -118,12 +117,13 @@
             CertificatePassword="$(ClickOnceCertificatePassword)"
             ConfigFile="%(ClickOnceConfig.ConfigFile)"
             EntryPoint="$(ClickOnceEntryPoint)"
+            EntryPoints="%(ClickOnceConfig.EntryPoints)"
             Files="@(ClientRedistFiles)"
             Install="%(ClickOnceConfig.Install)"
             LocalProduct="%(ClickOnceConfig.ProductName)"
             Product="$(ProductName)"
             Publisher="$(Publisher)"
-            Url="%(ClickOnceConfig.Url)"
+            BaseUrl="%(ClickOnceConfig.BaseUrl)"
             UrlParameters="$(ClickOnceUrlParameters)"
             ZipFile="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(ClickOnceConfig.Identity)_$(Version).zip"
             MinimumRequiredVersion="%(ClickOnceConfig.MinimumRequiredVersion)"
@@ -136,6 +136,7 @@
             CombineWithWebsite="%(ClickOnceConfig.CombineWithWebsite)"
             WebsiteFiles="@(CompiledSite)"
             LinkAssembliesWithManifestAsFile="$(ClickOnceLinkAssembliesWithManifestAsFile)"
+            UseAssemblyProductName ="%(ClickOnceConfig.UseAssemblyProductName)"
             />
     <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(ClickOnceConfig.Identity)_$(Version).zip"
           DestinationFolder="%(ClickOnceConfig.DeployCopyPath)"
@@ -158,7 +159,6 @@
     <Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
     <Error Condition="$(Version)==''" Text="Property 'Version' is not specified."/>
     <Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(ClickOnceCertificate)==''" Text="Property 'ClickOnceCertificate' is not specified."/>
-    <Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(ClickOnceEntryPoint)==''" Text="Property 'ClickOnceEntryPoint' is not specified."/>
     <Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(ProductName)==''" Text="Property 'ProductName' is not specified."/>
     <Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(Publisher)==''" Text="Property 'Publisher' is not specified."/>
 
@@ -184,12 +184,13 @@
             CertificatePassword="$(ClickOnceCertificatePassword)"
             ConfigFile="%(OctoConfig.ConfigFile)"
             EntryPoint="$(ClickOnceEntryPoint)"
+            EntryPoints="%(OctoConfig.EntryPoints)"
             Files="@(ClientRedistFiles)"
             Install="%(OctoConfig.Install)"
             LocalProduct="%(OctoConfig.ProductName)"
             Product="$(ProductName)"
             Publisher="$(Publisher)"
-            Url="%(OctoConfig.Url)"
+            BaseUrl="%(OctoConfig.BaseUrl)"
             UrlParameters="$(ClickOnceUrlParameters)"
             MinimumRequiredVersion="%(OctoConfig.MinimumRequiredVersion)"
             RequireLatestVersion="%(OctoConfig.RequireLatestVersion)"
@@ -205,6 +206,7 @@
             PackageId="%(OctoConfig.PackageId)"
             PushLocation="%(OctoConfig.PushLocation)"
             ApiKey="%(OctoConfig.ApiKey)"
+            UseAssemblyProductName ="%(OctoConfig.UseAssemblyProductName)"
             />
     <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(OctoConfig.Identity)_$(Version).zip"
           DestinationFolder="%(OctoConfig.DeployCopyPath)"

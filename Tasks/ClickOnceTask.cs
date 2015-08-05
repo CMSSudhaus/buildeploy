@@ -60,7 +60,7 @@ namespace Cms.Buildeploy.Tasks
             get;
             private set;
         }
-
+        
         public void AddEntry(string entryName, DateTime dateTime, FileStream stream)
         {
             ZipEntry entry = new ZipEntry(entryName);

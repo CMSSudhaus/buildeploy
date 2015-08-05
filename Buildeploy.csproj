@@ -57,6 +57,7 @@
     <Compile Include="ReferenceCheck\MissingAssemblyCollection.cs" />
     <Compile Include="ReferenceCheck\MissingReference.cs" />
     <Compile Include="ReferenceCheck\ReferenceChecker.cs" />
+    <Compile Include="Tasks\AssemblyAttributeHelper.cs" />
     <Compile Include="Tasks\ChangeVersion.cs" />
     <Compile Include="Tasks\CheckReferences.cs" />
     <Compile Include="Tasks\ClickOnceTask.cs" />
@@ -70,6 +71,7 @@
     <None Include="Buildeploy.ruleset" />
     <None Include="Buildeploy.targets">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
   </ItemGroup>
