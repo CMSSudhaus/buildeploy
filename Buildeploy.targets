@@ -1,408 +1,432 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <MSBuildCommunityTasksPath>.\</MSBuildCommunityTasksPath>
-    <BuildeployTasksAssemblyFile Condition="$(BuildeployTasksAssemblyFile) == ''">$(MSBuildThisFileDirectory)\buildeploy.dll</BuildeployTasksAssemblyFile>
-    <RedistConfiguration Condition="$(RedistConfiguration) == ''">Release</RedistConfiguration>
-  </PropertyGroup>
+	<PropertyGroup>
+		<MSBuildCommunityTasksPath>.\</MSBuildCommunityTasksPath>
+		<BuildeployTasksAssemblyFile Condition="$(BuildeployTasksAssemblyFile) == ''">$(MSBuildThisFileDirectory)\buildeploy.dll</BuildeployTasksAssemblyFile>
+		<RedistConfiguration Condition="$(RedistConfiguration) == ''">Release</RedistConfiguration>
+	</PropertyGroup>
 
 
-  <UsingTask
-        TaskName="Cms.Buildeploy.Tasks.CheckReferences"
-        AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+	<UsingTask
+		  TaskName="Cms.Buildeploy.Tasks.CheckReferences"
+		  AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
-  <UsingTask
-        TaskName="Cms.Buildeploy.Tasks.ClickOnce"
-        AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+	<UsingTask
+		  TaskName="Cms.Buildeploy.Tasks.ClickOnce"
+		  AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
-  <UsingTask
-        TaskName="Cms.Buildeploy.Tasks.NugetPackage"
-        AssemblyFile="$(BuildeployTasksAssemblyFile)" />
-
-
-  <UsingTask
-        TaskName="Cms.Buildeploy.Tasks.ChangeVersion"
-        AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+	<UsingTask
+		  TaskName="Cms.Buildeploy.Tasks.NugetPackage"
+		  AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
 
-  <UsingTask
-    TaskName="Cms.Buildeploy.Tasks.MSTest"
-    AssemblyFile="$(BuildeployTasksAssemblyFile)" />
-
-  <UsingTask
-    TaskName="Cms.Buildeploy.Tasks.ResolveRedistAssemblies"
-    AssemblyFile="$(BuildeployTasksAssemblyFile)" />
-
-  <UsingTask
-     TaskName="Cms.Buildeploy.Tasks.GenerateVersionPattern"
-     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
-
-  <Target Name="Configurations">
-    <CreateItem Include="$(TargetConfigurations)">
-      <Output TaskParameter="Include" ItemName="Configuration" />
-    </CreateItem>
-  </Target>
-
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="Build"
-        DependsOnTargets="Configurations;NugetRestore"
-        Inputs="@(Configuration)"
-        Outputs="target\%(Configuration.FileName)">
+	<UsingTask
+		  TaskName="Cms.Buildeploy.Tasks.ChangeVersion"
+		  AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
 
+	<UsingTask
+	  TaskName="Cms.Buildeploy.Tasks.MSTest"
+	  AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+
+	<UsingTask
+	  TaskName="Cms.Buildeploy.Tasks.ResolveRedistAssemblies"
+	  AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+
+	<UsingTask
+	   TaskName="Cms.Buildeploy.Tasks.GenerateVersionPattern"
+	   AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+
+	<Target Name="Configurations">
+		<CreateItem Include="$(TargetConfigurations)">
+			<Output TaskParameter="Include" ItemName="Configuration" />
+		</CreateItem>
+	</Target>
+
+	<Target Name="BeforeBuild">
+	</Target>
+	<Target Name="Build"
+		  DependsOnTargets="Configurations;NugetRestore"
+		  Inputs="@(Configuration)"
+		  Outputs="target\%(Configuration.Identity)">
 
 
-    <CallTarget Targets="BeforeBuild"/>
-
-    <PropertyGroup>
-      <CompileOutputFolder Condition="$(CompileOutputFolder)==''">$(MSBuildProjectDirectory)\bin\%(Configuration.Identity)\</CompileOutputFolder>
-      <ReferencePath>$(CompileOutputFolder)</ReferencePath>
-    </PropertyGroup>
-
-    <RemoveDir Directories="$(CompileOutputFolder)" />
-    <Copy SourceFiles="@(ReferenceFile)" DestinationFolder="$(CompileOutputFolder)"/>
-    <MakeDir  Directories="$(CompileOutputFolder)" />
-
-    <MSBuild Projects="@(ProjectToBuild)"
-                 Properties="Configuration=%(Configuration.Identity);OutDir=$(CompileOutputFolder);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL)"
-                 StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="Clean;Rebuild"/>
-
-  </Target>
-
-  <Target Name="CopyLocalizationFilesPerCulture" Inputs="@(LocalizationCulture)" Outputs="target\%(LocalizationCulture.FileName)">
-
-    <PropertyGroup>
-      <CompileOutput>$(MSBuildProjectDirectory)\bin\$(RedistConfiguration)\</CompileOutput>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <LibLocalizationItems Include="$(LibPath)\%(LocalizationCulture.FileName)\*.dll"/>
-      <AdditionalLocalizationItems Include="$(LocalizationFilesPath)\%(LocalizationCulture.FileName)\*.dll"/>
-      <LocalizationItems Include="$(CompileOutput)\%(LocalizationCulture.FileName)\*.dll"/>
-    </ItemGroup>
-    <MakeDir Directories="$(TempClientRedist)\%(LocalizationCulture.FileName)"/>
-
-    <Copy SourceFiles="@(LibLocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)" />
-    <Copy SourceFiles="@(LocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)"/>
-    <Copy SourceFiles="@(AdditionalLocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)"/>
-  </Target>
-
-  <Target Name="CopyLocalizationFiles">
-    <CallTarget Targets="CopyLocalizationFilesPerCulture"/>
-    <ItemGroup>
-      <TempLocalizationFile Include="$(TempLocalizationFiles)\**\*.*"/>
-    </ItemGroup>
-    <Copy SourceFiles="@(TempLocalizationFile)" DestinationFolder="$(TempClientRedist)\%(RecursiveDir)" />
-  </Target>
-  <Target Name="ClickOnce" Inputs="@(ClickOnceConfig)" Outputs="test">
-    <MakeDir Directories="$(VersionRedistRoot)\ClickOnce"/>
-    <Message Text="%(ClickOnceConfig.ConfigFile)"/>
-    <Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
-    <Error Condition="$(Version)==''" Text="Property 'Version' is not specified."/>
-    <Error Condition="$(ClickOnceCertificate)==''" Text="Property 'ClickOnceCertificate' is not specified."/>
-    <Error Condition="$(ClickOnceEntryPoint)==''" Text="Property 'ClickOnceEntryPoint' is not specified."/>
-    <Error Condition="$(ProductName)==''" Text="Property 'ProductName' is not specified."/>
-    <Error Condition="$(Publisher)==''" Text="Property 'Publisher' is not specified."/>
-
-    <ItemGroup Condition="@(ClientRedistFiles)==''">
-      <ClientRedistFiles Include="$(TempClientRedist)\**"/>
-    </ItemGroup>
-
-    <ClickOnce
-            ConfigName="%(ClickOnceConfig.Identity)"
-            UseConfigName="$(ClickOnceUseConfigName)"
-            AutoUpdate="%(ClickOnceConfig.AutoUpdate)"
-            BasePath="$(TempClientRedist)"
-            Certificate="$(ClickOnceCertificate)"
-            CertificatePassword="$(ClickOnceCertificatePassword)"
-            ConfigFile="%(ClickOnceConfig.ConfigFile)"
-            EntryPoint="$(ClickOnceEntryPoint)"
-            Files="@(ClientRedistFiles)"
-            Install="%(ClickOnceConfig.Install)"
-            LocalProduct="%(ClickOnceConfig.ProductName)"
-            Product="$(ProductName)"
-            Publisher="$(Publisher)"
-            Url="%(ClickOnceConfig.Url)"
-            UrlParameters="$(ClickOnceUrlParameters)"
-            ZipFile="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(ClickOnceConfig.Identity)_$(Version).zip"
-            MinimumRequiredVersion="%(ClickOnceConfig.MinimumRequiredVersion)"
-            RequireLatestVersion="%(ClickOnceConfig.RequireLatestVersion)"
-            Version="$(Version)"
-            TargetFramework="$(ClickOnceTargetFramework)"
-            CreateDesktopShortcut="%(ClickOnceConfig.CreateDesktopShortcut)"
-            IconFile="%(ClickOnceConfig.IconFile)"
-            WebsiteBasePath="$(CompiledSite)"
-            CombineWithWebsite="%(ClickOnceConfig.CombineWithWebsite)"
-            WebsiteFiles="@(CompiledSite)"
-            LinkAssembliesWithManifestAsFile="$(ClickOnceLinkAssembliesWithManifestAsFile)"
-            />
-    <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(ClickOnceConfig.Identity)_$(Version).zip"
-          DestinationFolder="%(ClickOnceConfig.DeployCopyPath)"
-          Condition="%(ClickOnceConfig.DeployCopyPath)!=''"/>
-
-    <ItemGroup>
-      <ServerRedistFiles Include="$(VersionRedistRoot)\Server\*.*"/>
-    </ItemGroup>
-    <Copy SourceFiles="@(ServerRedistFiles)"
-              DestinationFolder="%(ClickOnceConfig.ServerDeployCopyPath)"
-              Condition="%(ClickOnceConfig.ServerDeployCopyPath)!=''"/>
-  </Target>
-
-  <Target Name="OctoPackage" Inputs="@(OctoConfig)" Outputs="NotUsedOutput">
-    <PropertyGroup>
-      <PackagesDirPath>$(VersionRedistRoot)\Packages</PackagesDirPath>
-    </PropertyGroup>
-    <MakeDir Directories="$(PackagesDirPath)"/>
-    <Error Condition="$(NugetExe)==''" Text="Property 'NugetExe' is not specified."/>
-    <Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
-    <Error Condition="$(Version)==''" Text="Property 'Version' is not specified."/>
-    <Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(ClickOnceCertificate)==''" Text="Property 'ClickOnceCertificate' is not specified."/>
-    <Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(ClickOnceEntryPoint)==''" Text="Property 'ClickOnceEntryPoint' is not specified."/>
-    <Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(ProductName)==''" Text="Property 'ProductName' is not specified."/>
-    <Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(Publisher)==''" Text="Property 'Publisher' is not specified."/>
 
 
-    <ItemGroup Condition="@(ClientRedistFiles)==''">
-      <ClientRedistFiles Include="$(TempClientRedist)\**"/>
-    </ItemGroup>
+		<CallTarget Targets="BeforeBuild"/>
 
-    <ItemGroup>
-      <CompiledSiteWithConfig Include="@(CompiledSite)"/>
-      <CompiledSiteWithConfig Include="$(WebsiteSource)\Web*.config"/>
-    </ItemGroup>
+		<PropertyGroup>
+			<CompileOutputFolder Condition="$(CompileOutputFolder)==''">$(MSBuildProjectDirectory)\bin\%(Configuration.Identity)\</CompileOutputFolder>
+			<ReferencePath>$(CompileOutputFolder)</ReferencePath>
+		</PropertyGroup>
 
-    <NugetPackage
-            ConfigName="%(OctoConfig.Identity)"
-            NuspecFile="%(OctoConfig.NuspecFile)"
-            NugetExePath="$(NugetExe)"
-            OutputDirectory="$(PackagesDirPath)"
-            UseConfigName="$(ClickOnceUseConfigName)"
-            AutoUpdate="%(OctoConfig.AutoUpdate)"
-            BasePath="$(TempClientRedist)"
-            Certificate="$(ClickOnceCertificate)"
-            CertificatePassword="$(ClickOnceCertificatePassword)"
-            ConfigFile="%(OctoConfig.ConfigFile)"
-            EntryPoint="$(ClickOnceEntryPoint)"
-            Files="@(ClientRedistFiles)"
-            Install="%(OctoConfig.Install)"
-            LocalProduct="%(OctoConfig.ProductName)"
-            Product="$(ProductName)"
-            Publisher="$(Publisher)"
-            Url="%(OctoConfig.Url)"
-            UrlParameters="$(ClickOnceUrlParameters)"
-            MinimumRequiredVersion="%(OctoConfig.MinimumRequiredVersion)"
-            RequireLatestVersion="%(OctoConfig.RequireLatestVersion)"
-            Version="$(Version)"
-            TargetFramework="$(ClickOnceTargetFramework)"
-            CreateDesktopShortcut="%(OctoConfig.CreateDesktopShortcut)"
-            IconFile="%(OctoConfig.IconFile)"
-            WebsiteBasePath="$(CompiledSite)"
-            CombineWithWebsite="%(OctoConfig.CombineWithWebsite)"
-            WebsiteFiles="@(CompiledSiteWithConfig)"
-			      LinkAssembliesWithManifestAsFile="$(ClickOnceLinkAssembliesWithManifestAsFile)"
-            SkipClickOnce="%(OctoConfig.SkipClickOnce)"
-            PackageId="%(OctoConfig.PackageId)"
-            PushLocation="%(OctoConfig.PushLocation)"
-            ApiKey="%(OctoConfig.ApiKey)"
-            />
-    <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(OctoConfig.Identity)_$(Version).zip"
-          DestinationFolder="%(OctoConfig.DeployCopyPath)"
-          Condition="%(OctoConfig.DeployCopyPath)!=''"/>
+		<RemoveDir Directories="$(CompileOutputFolder)" />
+		<Copy SourceFiles="@(ReferenceFile)" DestinationFolder="$(CompileOutputFolder)"/>
+		<MakeDir  Directories="$(CompileOutputFolder)" />
+
+		<MSBuild Projects="@(ProjectToBuild)"
+					 Properties="Configuration=%(Configuration.Identity);OutDir=$(CompileOutputFolder);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL)"
+					 StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="Clean;Rebuild"/>
+
+	</Target>
+
+	<Target Name="CopyLocalizationFilesPerCulture" Inputs="@(LocalizationCulture)" Outputs="target\%(LocalizationCulture.FileName)">
+
+		<PropertyGroup>
+			<CompileOutput>$(MSBuildProjectDirectory)\bin\$(RedistConfiguration)\</CompileOutput>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<LibLocalizationItems Include="$(LibPath)\%(LocalizationCulture.FileName)\*.dll"/>
+			<AdditionalLocalizationItems Include="$(LocalizationFilesPath)\%(LocalizationCulture.FileName)\*.dll"/>
+			<LocalizationItems Include="$(CompileOutput)\%(LocalizationCulture.FileName)\*.dll"/>
+		</ItemGroup>
+		<MakeDir Directories="$(TempClientRedist)\%(LocalizationCulture.FileName)"/>
+
+		<Copy SourceFiles="@(LibLocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)" />
+		<Copy SourceFiles="@(LocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)"/>
+		<Copy SourceFiles="@(AdditionalLocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)"/>
+	</Target>
+
+	<Target Name="CopyLocalizationFiles">
+		<CallTarget Targets="CopyLocalizationFilesPerCulture"/>
+		<ItemGroup>
+			<TempLocalizationFile Include="$(TempLocalizationFiles)\**\*.*"/>
+		</ItemGroup>
+		<Copy SourceFiles="@(TempLocalizationFile)" DestinationFolder="$(TempClientRedist)\%(RecursiveDir)" />
+	</Target>
+	<Target Name="ClickOnce" Inputs="@(ClickOnceConfig)" Outputs="test">
+		<MakeDir Directories="$(VersionRedistRoot)\ClickOnce"/>
+		<Message Text="%(ClickOnceConfig.ConfigFile)"/>
+		<Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
+		<Error Condition="$(Version)==''" Text="Property 'Version' is not specified."/>
+		<Error Condition="$(ClickOnceCertificate)==''" Text="Property 'ClickOnceCertificate' is not specified."/>
+		<Error Condition="$(ClickOnceEntryPoint)==''" Text="Property 'ClickOnceEntryPoint' is not specified."/>
+		<Error Condition="$(ProductName)==''" Text="Property 'ProductName' is not specified."/>
+		<Error Condition="$(Publisher)==''" Text="Property 'Publisher' is not specified."/>
+
+		<ItemGroup Condition="@(ClientRedistFiles)==''">
+			<ClientRedistFiles Include="$(TempClientRedist)\**"/>
+		</ItemGroup>
+
+		<ClickOnce
+				ConfigName="%(ClickOnceConfig.Identity)"
+				UseConfigName="$(ClickOnceUseConfigName)"
+				AutoUpdate="%(ClickOnceConfig.AutoUpdate)"
+				BasePath="$(TempClientRedist)"
+				Certificate="$(ClickOnceCertificate)"
+				CertificatePassword="$(ClickOnceCertificatePassword)"
+				ConfigFile="%(ClickOnceConfig.ConfigFile)"
+				EntryPoint="$(ClickOnceEntryPoint)"
+				Files="@(ClientRedistFiles)"
+				Install="%(ClickOnceConfig.Install)"
+				LocalProduct="%(ClickOnceConfig.ProductName)"
+				Product="$(ProductName)"
+				Publisher="$(Publisher)"
+				Url="%(ClickOnceConfig.Url)"
+				UrlParameters="$(ClickOnceUrlParameters)"
+				ZipFile="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(ClickOnceConfig.Identity)_$(Version).zip"
+				MinimumRequiredVersion="%(ClickOnceConfig.MinimumRequiredVersion)"
+				RequireLatestVersion="%(ClickOnceConfig.RequireLatestVersion)"
+				Version="$(Version)"
+				TargetFramework="$(ClickOnceTargetFramework)"
+				CreateDesktopShortcut="%(ClickOnceConfig.CreateDesktopShortcut)"
+				IconFile="%(ClickOnceConfig.IconFile)"
+				WebsiteBasePath="$(CompiledSite)"
+				CombineWithWebsite="%(ClickOnceConfig.CombineWithWebsite)"
+				WebsiteFiles="@(CompiledSite)"
+				LinkAssembliesWithManifestAsFile="$(ClickOnceLinkAssembliesWithManifestAsFile)"
+			/>
+		<Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(ClickOnceConfig.Identity)_$(Version).zip"
+			  DestinationFolder="%(ClickOnceConfig.DeployCopyPath)"
+			  Condition="%(ClickOnceConfig.DeployCopyPath)!=''"/>
+
+		<ItemGroup>
+			<ServerRedistFiles Include="$(VersionRedistRoot)\Server\*.*"/>
+		</ItemGroup>
+		<Copy SourceFiles="@(ServerRedistFiles)"
+				  DestinationFolder="%(ClickOnceConfig.ServerDeployCopyPath)"
+				  Condition="%(ClickOnceConfig.ServerDeployCopyPath)!=''"/>
+	</Target>
+
+	<Target Name="OctoPackage" Inputs="@(OctoConfig)" Outputs="NotUsedOutput" DependsOnTargets="CreateProperties">
+
+		<MakeDir Directories="$(PackagesDirPath)"/>
+		<Error Condition="$(NugetExe)==''" Text="Property 'NugetExe' is not specified."/>
+		<Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
+		<Error Condition="$(Version)==''" Text="Property 'Version' is not specified."/>
+		<Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(ClickOnceCertificate)==''" Text="Property 'ClickOnceCertificate' is not specified."/>
+		<Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(ClickOnceEntryPoint)==''" Text="Property 'ClickOnceEntryPoint' is not specified."/>
+		<Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(ProductName)==''" Text="Property 'ProductName' is not specified."/>
+		<Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(Publisher)==''" Text="Property 'Publisher' is not specified."/>
+
+		<Error Condition="('%(OctoConfig.NuspecFile)'!='') == ('%(OctoConfig.ProjectFile)'!='')" Text="Exactly one of Properties (NuspecFile|ProjectFile) must be set" />
+
+		<ItemGroup Condition="@(ClientRedistFiles)==''">
+			<ClientRedistFiles Include="$(TempClientRedist)\**"/>
+		</ItemGroup>
+
+		<ItemGroup>
+			<CompiledSiteWithConfig Include="@(CompiledSite)"/>
+			<CompiledSiteWithConfig Include="$(WebsiteSource)\Web*.config"/>
+		</ItemGroup>
+
+		<NugetPackage
+				ConfigName="%(OctoConfig.Identity)"
+				NuspecFile="%(OctoConfig.NuspecFile)"
+				NugetExePath="$(NugetExe)"
+				OutputDirectory="$(PackagesDirPath)"
+				UseConfigName="$(ClickOnceUseConfigName)"
+				AutoUpdate="%(OctoConfig.AutoUpdate)"
+				BasePath="$(TempClientRedist)"
+				Certificate="$(ClickOnceCertificate)"
+				CertificatePassword="$(ClickOnceCertificatePassword)"
+				ConfigFile="%(OctoConfig.ConfigFile)"
+				EntryPoint="$(ClickOnceEntryPoint)"
+				Files="@(ClientRedistFiles)"
+				Install="%(OctoConfig.Install)"
+				LocalProduct="%(OctoConfig.ProductName)"
+				Product="$(ProductName)"
+				Publisher="$(Publisher)"
+				Url="%(OctoConfig.Url)"
+				UrlParameters="$(ClickOnceUrlParameters)"
+				MinimumRequiredVersion="%(OctoConfig.MinimumRequiredVersion)"
+				RequireLatestVersion="%(OctoConfig.RequireLatestVersion)"
+				Version="$(Version)"
+				TargetFramework="$(ClickOnceTargetFramework)"
+				CreateDesktopShortcut="%(OctoConfig.CreateDesktopShortcut)"
+				IconFile="%(OctoConfig.IconFile)"
+				WebsiteBasePath="$(CompiledSite)"
+				CombineWithWebsite="%(OctoConfig.CombineWithWebsite)"
+				WebsiteFiles="@(CompiledSiteWithConfig)"
+				LinkAssembliesWithManifestAsFile="$(ClickOnceLinkAssembliesWithManifestAsFile)"
+				SkipClickOnce="%(OctoConfig.SkipClickOnce)"
+				PackageId="%(OctoConfig.PackageId)"
+				PushLocation="%(OctoConfig.PushLocation)"
+				ApiKey="%(OctoConfig.ApiKey)"
+				NoDefaultExcludes="%(OctoConfig.NoDefaultExcludes)"
+				Condition="'%(OctoConfig.NuspecFile)'!=''"
+			/>
+
+		<Exec Command="$(NugetExe) pack %(OctoConfig.ProjectFile) -IncludeReferencedProjects -Properties Configuration=$(RedistConfiguration) $(NonInteractiveSwitch) -OutputDirectory $(PackagesDirPath) -symbols"
+			  Condition="'%(OctoConfig.ProjectFile)'!=''" />
+
+		<Exec Command="$(NugetExe) push $(PackagesDirPath)\%(OctoConfig.Identity).$(Version).nupkg -Source %(OctoConfig.PushLocation) %(OctoConfig.ApiKey)"
+			  Condition="'%(OctoConfig.ProjectFile)'!='' and '%(OctoConfig.PushLocation)'!='' and Exists('$(PackagesDirPath)\%(OctoConfig.Identity).$(Version).nupkg')" />
+
+		<Exec Command="$(NugetExe) push $(PackagesDirPath)\%(OctoConfig.Identity).$(Version).symbols.nupkg -Source %(OctoConfig.SymbolsPushLocation) %(OctoConfig.SymbolsApiKey)"
+			  Condition="'%(OctoConfig.ProjectFile)'!='' and '%(OctoConfig.SymbolsPushLocation)'!='' and Exists('$(PackagesDirPath)\%(OctoConfig.Identity).$(Version).symbols.nupkg')" />
+	</Target>
+
+
+	<ItemGroup>
+		<PackagesConfig Include="**\packages.config"/>
+	</ItemGroup>
+
+	<Target Name="NugetRestore" Inputs="@(PackagesConfig)" Outputs="NotUsedOutput" Condition="$(NugetExe)!=''">
+		<Error Condition="$(NugetPackagesSource)==''" Text="Property 'NugetPackagesSource' is not specified."/>
+		<Exec Command="$(NugetExe) restore %(PackagesConfig.FullPath) -Source $(NugetPackagesSource) -PackagesDirectory $(MSBuildProjectDirectory)\packages" />
+	</Target>
+
+	<Target Name="OctoDeploy" Inputs="@(OctoConfig)" Outputs="NotUsedOutput">
+		<MakeDir Directories="$(PackagesDirPath)"/>
+		<Error Condition="$(NugetExe)==''" Text="Property 'NugetExe' is not specified."/>
+		<Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
+		<Error Condition="$(Version)==''" Text="Property 'Version' is not specified."/>
+
+		<Exec
+		  Command="$(OctoExePath) create-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --version $(Version) --packageversion $(Version) --releasenotes &quot;%(OctoConfig.ReleaseNotes)&quot;"
+		  Condition="%(OctoConfig.OctopusProject)!=''"/>
+		<Exec
+		  Command="$(OctoExePath) deploy-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --deployto=%(OctoConfig.DeployEnviroment) --version $(Version) --waitfordeployment"
+		  Condition="%(OctoConfig.DeployEnviroment)!=''"/>
+	</Target>
+	<Target Name="BeforeRedistBinaries"/>
+	<Target Name="AfterRedistBinaries"/>
+
+
+	<PropertyGroup>
+		<TempRedistRoot>Temp</TempRedistRoot>
+		<TempClientRedist>$(TempRedistRoot)\Client</TempClientRedist>
+		<TempServerRedist>$(TempRedistRoot)\Server</TempServerRedist>
+		<TempLocalizationFiles>$(TempRedistRoot)\Localization</TempLocalizationFiles>
+		<CompiledSite>$(TempRedistRoot)\Compiledsite</CompiledSite>
+	</PropertyGroup>
+	<Target Name="CopyToVersionRedist">
+
+	</Target>
+
+	<Target Name="CreateProperties" DependsOnTargets="UpdateVersion">
+		<PropertyGroup>
+			<CompileOutput Condition="$(CompileOutput)==''">$(OutputRoot)\$(RedistConfiguration)\</CompileOutput>
+			<RedistRoot Condition="'$(RedistRoot)' == '' and $(CustomRedistRoot)!=''">$(CustomRedistRoot)</RedistRoot>
+			<VersionRedistRoot Condition="'$(VersionRedistRoot)' == '' and $(DefaultVersionRedistRoot)!=''">$(DefaultVersionRedistRoot)</VersionRedistRoot>
+			<VersionRedistRoot Condition="'$(VersionRedistRoot)' == '' and $(DefaultVersionRedistRoot)=='' and $(BuildDefinition)!=''">$(RedistRoot)\$(BuildDefinition)\$(Version)</VersionRedistRoot>
+			<VersionRedistRoot Condition="'$(VersionRedistRoot)' == '' and $(DefaultVersionRedistRoot)=='' and $(BuildDefinition)==''">$(RedistRoot)\$(Version)</VersionRedistRoot>
+			<PackagesDirPath Condition="'$(PackagesDirPath)'==''">$(VersionRedistRoot)\Packages</PackagesDirPath>
+		</PropertyGroup>
+		<Message Text="$(PackagesDirPath)" />
+	</Target>
+
+	<Target Name="UpdateVersion">
+		<Message Text="$(VersionPattern)"/>
+
+		<PropertyGroup>
+			<BuildVersionPattern Condition="'$(BuildVersionPattern)' == '' and $(BuildLabel) != ''"></BuildVersionPattern>
+			<GenerateVersionPrefix Condition="'$(GenerateVersionPrefix)' == '' and $(VersionPrefix) == ''">*.*</GenerateVersionPrefix>
+			<GenerateVersionPrefix Condition="'$(GenerateVersionPrefix)' == '' and $(VersionPrefix) != ''">$(VersionPrefix)</GenerateVersionPrefix>
+		</PropertyGroup>
+		
+		<GenerateVersionPattern BuildNumber="$(BuildLabel)" StartDate="$(VersionStartDate)" Prefix="$(GenerateVersionPrefix)" Condition="$(BuildLabel)!=''">
+			<Output TaskParameter="Pattern" PropertyName="BuildVersionPattern"/>
+		</GenerateVersionPattern>
+
+		<ChangeVersion Files="@(VersionFile)" Version="$(BuildVersionPattern)" Condition="$(BuildVersionPattern)!='' and '$(Version)' == ''">
+			<Output TaskParameter="NewVersion" PropertyName="Version"/>
+		</ChangeVersion>
+
+		<ChangeVersion Files="@(VersionFile)" Version="$(VersionPattern)" Condition="$(BuildVersionPattern)=='' and '$(Version)' == ''">
+			<Output TaskParameter="NewVersion" PropertyName="Version"/>
+		</ChangeVersion>
+	</Target>
+
+	<Target Name="RedistBinaries" DependsOnTargets="CreateProperties">
+
+		<CallTarget Targets="BeforeRedistBinaries"/>
+
+		<Error Condition="$(RedistRoot)==''" Text="RedistRoot or CustomRedistRoot properties are not specified."/>
+
+		<RemoveDir Directories="$(TempRedistRoot)"/>
+
+		<CallTarget Targets="Build" Condition="$(SkipBuild) != true"/>
+
+
+		<NUnit Assemblies="@(NUnitAssembly)" ToolPath="$(LibPath)" Condition="@(NUnitAssembly)!=''" WorkingDirectory="bin\$(RedistConfiguration)"/>
+		<PropertyGroup>
+			<MSTestExe Condition="$(MSTestExe)=='' AND $(VS120COMNTOOLS)!=''">$(VS120COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
+			<MSTestExe Condition="$(MSTestExe)=='' AND $(VS110COMNTOOLS)!=''">$(VS110COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
+			<MSTestExe Condition="$(MSTestExe)=='' AND $(VS100COMNTOOLS)!=''">$(VS100COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
+		</PropertyGroup>
+
+		<MSTest
+		  MSTestExe="$(MSTestExe)"
+		  Assemblies="@(MSTestAssembly)"
+		  Condition="$(SkipMSTest)!=true and @(MSTestAssembly)!='' and $(MSTestExe)!=''"
+		  WorkingDirectory="bin\$(RedistConfiguration)"
+		  Category="$(MSTestCategory)"/>
+
+		<CallTarget Targets="PrepareLocalFiles" />
+
+		<CallTarget Targets="CopyRedistFiles" />
+	</Target>
 	
-    <ItemGroup>
-      <ServerRedistFiles Include="$(VersionRedistRoot)\Server\*.*"/>
-    </ItemGroup>
-    <Copy SourceFiles="@(ServerRedistFiles)"
-              DestinationFolder="%(OctoConfig.ServerDeployCopyPath)"
-              Condition="%(OctoConfig.ServerDeployCopyPath)!=''"/>
-  </Target>
+	<Target Name="CopyRedistFiles">
+	
+		<MakeDir Directories="$(VersionRedistRoot)"/>
+		
+		<ItemGroup Condition="@(ClientRedistFiles)==''">
+			<ClientRedistFiles Include="$(TempClientRedist)\**"/>
+		</ItemGroup>
+
+		<Copy SourceFiles="@(ClientRedistFiles)" DestinationFolder="$(VersionRedistRoot)\Client"/>
+
+		<ItemGroup Condition="@(ServerRedistFiles)==''">
+			<ServerRedistFiles Include="$(TempServerRedist)\**"/>
+		</ItemGroup>
+		<Copy SourceFiles="@(ServerRedistFiles)" DestinationFolder="$(VersionRedistRoot)\Server"/>
+		<!--<Zip Files="@(ClientRedistFiles)" WorkingDirectory="$(TempClientRedist)" ZipFileName="$(VersionRedistRoot)\Client-v$(Version).zip" />
+	<Zip Files="@(ServerRedistFiles)" WorkingDirectory="$(TempServerRedist)" ZipFileName="$(VersionRedistRoot)\Server-v$(Version).zip" />-->
+	</Target>
+	
+	<Target Name="PrepareLocalFiles">
+		<MakeDir Directories="$(TempClientRedist)"/>
+
+		<ResolveRedistAssemblies Files="@(ClientRedistFile)" LookUpPath="$(CompileOutput)">
+			<Output TaskParameter="Result" ItemName="RedistPath"/>
+		</ResolveRedistAssemblies>
+
+		<ResolveRedistAssemblies Files="@(ServerRedistFile)" LookUpPath="$(CompileOutput)">
+			<Output TaskParameter="Result" ItemName="ServerRedistPath"/>
+		</ResolveRedistAssemblies>
+
+		<ResolveRedistAssemblies Files="@(ServerDependency)" LookUpPath="$(CompileOutput)">
+			<Output TaskParameter="Result" ItemName="ServerDependencyRedistPath"/>
+		</ResolveRedistAssemblies>
+
+		<AssignTargetPath Files="@(RedistPath)" RootFolder="$(CompileOutput)">
+			<Output TaskParameter="AssignedFiles" ItemName="RedistWithTargetPath"/>
+		</AssignTargetPath>
+
+		<Copy SourceFiles="@(ClientLibDependencyPath)" DestinationFolder="$(TempClientRedist)"/>
+		<Copy SourceFiles="@(RedistWithTargetPath)" DestinationFiles = "@(RedistWithTargetPath->'$(TempClientRedist)\%(TargetPath)')"/>
+		<Copy SourceFiles="@(ClientDependency)" DestinationFolder="$(TempClientRedist)"/>
+		<CallTarget Targets="CopyLocalizationFiles"/>
+
+		<CheckReferences Path="$(TempClientRedist)" MessageInfo="Client" Excludes="@(CheckReferenceExclude)"/>
+		<MakeDir Directories="$(TempServerRedist)"/>
+
+		<Copy SourceFiles="@(ServerLibPath)" DestinationFolder="$(TempServerRedist)"/>
+		<Copy SourceFiles="@(ServerRedistPath)" DestinationFolder="$(TempServerRedist)"/>
+		<Copy SourceFiles="@(ServerDependencyRedistPath)" DestinationFolder="$(TempServerRedist)"/>
+		<Copy SourceFiles="@(ServerLibDependencyPath)" DestinationFolder="$(TempServerRedist)"/>
+
+		<CheckReferences Path="$(TempServerRedist)" MessageInfo="Server" Excludes="@(CheckReferenceExclude)"/>
+	</Target>
+
+	<Target Name="RedistProjects">
+		<MSBuild Projects="@(RedistProject)"
+				Properties="Configuration=%(Configuration.Identity);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL);NugetExe=$(NugetExe);SkipBuild=True;RedistRoot=$(RedistRoot);VersionPattern=*.*.*.*;BuildDefinition=$(BuildDefinition)"
+				StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="RedistBinaries;PrecompileWeb;OctoPackage;ClickOnce;"/>
+	</Target>
+
+	<Target Name="AfterWebsiteCompiled" />
+
+	<Target Name="PrecompileWeb"  Condition="$(WebsiteSource)!=''">
+
+		<Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
+
+		<RemoveDir Directories="$(CompiledSite)"/>
+		<RemoveDir Directories="$(WebsiteSource)\bin"/>
+
+		<ResolveRedistAssemblies Files="@(WebsiteDependency)" LookUpPath="$(CompileOutput)">
+			<Output TaskParameter="Result" ItemName="WebsiteFileTemp"/>
+		</ResolveRedistAssemblies>
+
+		<AssignTargetPath Files="@(WebsiteFileTemp)" RootFolder="$(CompileOutput)">
+			<Output TaskParameter="AssignedFiles" ItemName="WebsiteFile"/>
+		</AssignTargetPath>
+
+		<Copy SourceFiles="@(WebsiteFile)" DestinationFiles = "@(WebsiteFile->'$(WebSiteSource)\bin\%(TargetPath)')"/>
+		<ItemGroup>
+			<ServerRedistFiles Include="$(TempServerRedist)\**"/>
+		</ItemGroup>
+
+		<Copy Condition="@(WebsiteDependency)==''" SourceFiles="@(ServerRedistFiles)" DestinationFolder="$(WebSiteSource)\bin" />
+
+		<AspNetCompiler
+			VirtualPath="/"
+			PhysicalPath="$(WebsiteSource)"
+			TargetPath="$(CompiledSite)"
+			Debug="true"
+			FixedNames="true"
+			  Updateable="false"
+		/>
+		<Message Text="WebSiteCompileExclude: @(WebSiteCompileExclude)" />
+		<Delete Files="@(WebsiteCompileExclude)"/>
 
 
-  <ItemGroup>
-    <PackagesConfig Include="**\packages.config"/>
-  </ItemGroup>
+		<Copy SourceFiles="@(TempLocalizationFile)" DestinationFolder="$(CompiledSite)\bin\%(RecursiveDir)"/>
+		<CallTarget Targets="AfterWebsiteCompiled"/>
 
-  <Target Name="NugetRestore" Inputs="@(PackagesConfig)" Outputs="NotUsedOutput" Condition="$(NugetExe)!=''">
-    <Error Condition="$(NugetPackagesSource)==''" Text="Property 'NugetPackagesSource' is not specified."/>
-    <Exec Command="$(NugetExe) restore %(PackagesConfig.FullPath) -Source $(NugetPackagesSource) -PackagesDirectory $(MSBuildProjectDirectory)\packages" />
-  </Target>
-  
-  <Target Name="OctoDeploy" Inputs="@(OctoConfig)" Outputs="NotUsedOutput">
-    <PropertyGroup>
-      <PackagesDirPath>$(VersionRedistRoot)\Packages</PackagesDirPath>
-    </PropertyGroup>
-    <MakeDir Directories="$(PackagesDirPath)"/>
-    <Error Condition="$(NugetExe)==''" Text="Property 'NugetExe' is not specified."/>
-    <Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
-    <Error Condition="$(Version)==''" Text="Property 'Version' is not specified."/>
+		<CheckReferences Path="$(WebSiteSource)\bin" MessageInfo="Website" Excludes="@(CheckReferenceExclude)"/>
+		<ItemGroup>
+			<CompiledSite Include="$(CompiledSite)\**\*.*" Exclude="$(CompiledSite)\**\*.csproj;$(CompiledSite)\**\*.user;$(CompiledSite)\obj\**;$(CompiledSite)\**\web*.config;$(CompiledSite)\**\*.snk;$(CompiledSite)\**\*.log" />
+		</ItemGroup>
+		<Copy SourceFiles="@(CompiledSite)" DestinationFolder="$(WebsiteRedistDir)\%(RecursiveDir)" Condition="$(WebsiteRedistDir) != ''" />
+		<!--<Zip Files="@(CompiledSite)" WorkingDirectory="Temp\Compiledsite" ZipFileName="$(VersionRedistRoot)\Site-v$(Version).zip" />-->
+	</Target>
 
-    <Exec
-      Command="$(OctoExePath) create-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --version $(Version) --packageversion $(Version) --releasenotes &quot;%(OctoConfig.ReleaseNotes)&quot;"
-      Condition="%(OctoConfig.OctopusProject)!=''"/>
-    <Exec
-      Command="$(OctoExePath) deploy-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --deployto=%(OctoConfig.DeployEnviroment) --version $(Version) --waitfordeployment"
-      Condition="%(OctoConfig.DeployEnviroment)!=''"/>
-  </Target>
-  <Target Name="BeforeRedistBinaries"/>
-  <Target Name="AfterRedistBinaries"/>
-
-
-  <PropertyGroup>
-    <TempRedistRoot>Temp</TempRedistRoot>
-    <TempClientRedist>$(TempRedistRoot)\Client</TempClientRedist>
-    <TempServerRedist>$(TempRedistRoot)\Server</TempServerRedist>
-    <TempLocalizationFiles>$(TempRedistRoot)\Localization</TempLocalizationFiles>
-    <CompiledSite>$(TempRedistRoot)\Compiledsite</CompiledSite>
-  </PropertyGroup>
-  <Target Name="CopyToVersionRedist">
-
-  </Target>
-
-  <Target Name="RedistBinaries">
-
-    <CallTarget Targets="BeforeRedistBinaries"/>
-    <PropertyGroup>
-      <CompileOutput Condition="$(CompileOutput)==''">$(OutputRoot)\$(RedistConfiguration)\</CompileOutput>
-      <RedistRoot Condition="$(CustomRedistRoot)!=''">$(CustomRedistRoot)</RedistRoot>
-    </PropertyGroup>
-
-    <Error Condition="$(RedistRoot)==''" Text="RedistRoot or CustomRedistRoot properties are not specified."/>
-    <Message Text="$(VersionPattern)"/>
-
-    <PropertyGroup>
-      <BuildVersionPattern Condition="$(BuildLabel) != ''"></BuildVersionPattern>
-      <GenerateVersionPrefix Condition="$(VersionPrefix) == ''">*.*</GenerateVersionPrefix>
-      <GenerateVersionPrefix Condition="$(VersionPrefix) != ''">$(VersionPrefix)</GenerateVersionPrefix>
-    </PropertyGroup>
-    <GenerateVersionPattern BuildNumber="$(BuildLabel)" StartDate="$(VersionStartDate)" Prefix="$(GenerateVersionPrefix)" Condition="$(BuildLabel)!=''">
-      <Output TaskParameter="Pattern" PropertyName="BuildVersionPattern"/>
-    </GenerateVersionPattern>
-
-    <ChangeVersion Files="@(VersionFile)" Version="$(BuildVersionPattern)" Condition="$(BuildVersionPattern)!=''">
-      <Output TaskParameter="NewVersion" PropertyName="Version"/>
-    </ChangeVersion>
-
-    <ChangeVersion Files="@(VersionFile)" Version="$(VersionPattern)" Condition="$(BuildVersionPattern)==''">
-      <Output TaskParameter="NewVersion" PropertyName="Version"/>
-    </ChangeVersion>
-
-
-    <PropertyGroup>
-      <VersionRedistRoot Condition="$(DefaultVersionRedistRoot)!=''">$(DefaultVersionRedistRoot)</VersionRedistRoot>
-      <VersionRedistRoot Condition="$(DefaultVersionRedistRoot)==''">$(RedistRoot)\$(BuildDefinition)\$(Version)</VersionRedistRoot>
-    </PropertyGroup>
-
-    <RemoveDir Directories="$(TempRedistRoot)"/>
-    <CallTarget Targets="Build" Condition="$(SkipBuild) != true"/>
-
-    <MakeDir Directories="$(TempRedistRoot)\Client"/>
-
-    <NUnit Assemblies="@(NUnitAssembly)" ToolPath="$(LibPath)" Condition="@(NUnitAssembly)!=''" WorkingDirectory="bin\$(RedistConfiguration)"/>
-    <PropertyGroup>
-      <MSTestExe Condition="$(MSTestExe)=='' AND $(VS120COMNTOOLS)!=''">$(VS120COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
-      <MSTestExe Condition="$(MSTestExe)=='' AND $(VS110COMNTOOLS)!=''">$(VS110COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
-      <MSTestExe Condition="$(MSTestExe)=='' AND $(VS100COMNTOOLS)!=''">$(VS100COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
-    </PropertyGroup>
-
-    <MSTest
-      MSTestExe="$(MSTestExe)"
-      Assemblies="@(MSTestAssembly)"
-      Condition="$(SkipMSTest)!=true and @(MSTestAssembly)!=''"
-      WorkingDirectory="bin\$(RedistConfiguration)"
-      Category="$(MSTestCategory)"/>
-
-    <ResolveRedistAssemblies Files="@(ClientRedistFile)" LookUpPath="$(CompileOutput)">
-      <Output TaskParameter="Result" ItemName="RedistPath"/>
-    </ResolveRedistAssemblies>
-
-    <ResolveRedistAssemblies Files="@(ServerRedistFile)" LookUpPath="$(CompileOutput)">
-      <Output TaskParameter="Result" ItemName="ServerRedistPath"/>
-    </ResolveRedistAssemblies>
-
-    <AssignTargetPath Files="@(RedistPath)" RootFolder="$(CompileOutput)">
-      <Output TaskParameter="AssignedFiles" ItemName="RedistWithTargetPath"/>
-    </AssignTargetPath>
-
-    <Copy SourceFiles="@(ClientLibDependencyPath)" DestinationFolder="$(TempClientRedist)"/>
-    <Copy SourceFiles="@(RedistWithTargetPath)" DestinationFiles = "@(RedistWithTargetPath->'$(TempClientRedist)\%(TargetPath)')"/>
-    <Copy SourceFiles="@(ClientDependency)" DestinationFolder="$(TempClientRedist)"/>
-    <CallTarget Targets="CopyLocalizationFiles"/>
-
-    <CheckReferences Path="$(TempClientRedist)" MessageInfo="Client" Excludes="@(CheckReferenceExclude)"/>
-    <MakeDir Directories="$(TempServerRedist)"/>
-
-    <Copy SourceFiles="@(ServerLibPath)" DestinationFolder="$(TempServerRedist)"/>
-    <Copy SourceFiles="@(ServerRedistPath)" DestinationFolder="$(TempServerRedist)"/>
-    <Copy SourceFiles="@(ServerDependency)" DestinationFolder="$(TempServerRedist)"/>
-    <Copy SourceFiles="@(ServerLibDependencyPath)" DestinationFolder="$(TempServerRedist)"/>
-
-    <CheckReferences Path="$(TempServerRedist)" MessageInfo="Server" Excludes="@(CheckReferenceExclude)"/>
-    <MakeDir Directories="$(VersionRedistRoot)"/>
-    <ItemGroup>
-      <ClientRedistFiles Include="$(TempClientRedist)\**"/>
-      <ServerRedistFiles Include="$(TempServerRedist)\**"/>
-    </ItemGroup>
-
-    <Copy SourceFiles="@(RedistFiles)" DestinationFolder="$(VersionRedistRoot)\%(RecursiveDir)"/>
-    <!--<Zip Files="@(ClientRedistFiles)" WorkingDirectory="$(TempClientRedist)" ZipFileName="$(VersionRedistRoot)\Client-v$(Version).zip" />
-    <Zip Files="@(ServerRedistFiles)" WorkingDirectory="$(TempServerRedist)" ZipFileName="$(VersionRedistRoot)\Server-v$(Version).zip" />-->
-
-
-  </Target>
-
-  <Target Name="RedistProjects">
-    <MSBuild Projects="@(RedistProject)"
-            Properties="Configuration=%(Configuration.Identity);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL);NugetExe=$(NugetExe);SkipBuild=True;RedistRoot=$(RedistRoot);VersionPattern=*.*.*.*;BuildDefinition=$(BuildDefinition)"
-            StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="RedistBinaries;PrecompileWeb;OctoPackage;ClickOnce;"/>
-  </Target>
-  <Target Name="AfterWebsiteCompiled" />
-  <Target Name="PrecompileWeb"  Condition="$(WebsiteSource)!=''">
-
-    <Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
-
-    <RemoveDir Directories="$(CompiledSite)"/>
-    <RemoveDir Directories="$(WebsiteSource)\bin"/>
-
-    <ResolveRedistAssemblies Files="@(WebsiteDependency)" LookUpPath="$(CompileOutput)">
-      <Output TaskParameter="Result" ItemName="WebsiteFileTemp"/>
-    </ResolveRedistAssemblies>
-
-    <AssignTargetPath Files="@(WebsiteFileTemp)" RootFolder="$(CompileOutput)">
-      <Output TaskParameter="AssignedFiles" ItemName="WebsiteFile"/>
-    </AssignTargetPath>
-
-    <Copy SourceFiles="@(WebsiteFile)" DestinationFiles = "@(WebsiteFile->'$(WebSiteSource)\bin\%(TargetPath)')"/>
-    <ItemGroup>
-      <ServerRedistFiles Include="$(TempServerRedist)\**"/>
-    </ItemGroup>
-
-    <Copy Condition="@(WebsiteDependency)==''" SourceFiles="@(ServerRedistFiles)" DestinationFolder="$(WebSiteSource)\bin" />
-
-    <AspNetCompiler
-        VirtualPath="/"
-        PhysicalPath="$(WebsiteSource)"
-        TargetPath="$(CompiledSite)"
-        Debug="true"
-        FixedNames="true"
-	      Updateable="false"
-        />
-    <Message Text="WebSiteCompileExclude: @(WebSiteCompileExclude)" />
-    <Delete Files="@(WebsiteCompileExclude)"/>
-
-
-    <Copy SourceFiles="@(TempLocalizationFile)" DestinationFolder="$(CompiledSite)\bin\%(RecursiveDir)"/>
-    <CallTarget Targets="AfterWebsiteCompiled"/>
-
-    <CheckReferences Path="$(WebSiteSource)\bin" MessageInfo="Website" Excludes="@(CheckReferenceExclude)"/>
-    <ItemGroup>
-      <CompiledSite Include="$(CompiledSite)\**\*.*" Exclude="$(CompiledSite)\**\*.csproj;$(CompiledSite)\**\*.user;$(CompiledSite)\obj\**;$(CompiledSite)\**\web*.config;$(CompiledSite)\**\*.snk;$(CompiledSite)\**\*.log" />
-    </ItemGroup>
-    <Copy SourceFiles="@(CompiledSite)" DestinationFolder="$(WebsiteRedistDir)\%(RecursiveDir)" Condition="$(WebsiteRedistDir) != ''" />
-    <!--<Zip Files="@(CompiledSite)" WorkingDirectory="Temp\Compiledsite" ZipFileName="$(VersionRedistRoot)\Site-v$(Version).zip" />-->
-  </Target>
-
-  <Target Name="Redist" DependsOnTargets="RedistBinaries;PrecompileWeb;ClickOnce;OctoPackage;RedistProjects;AfterRedistBinaries;OctoDeploy" >
-    <RemoveDir Directories="$(TempRedistRoot)"/>
-  </Target>
+	<Target Name="Redist" DependsOnTargets="RedistBinaries;PrecompileWeb;ClickOnce;OctoPackage;RedistProjects;AfterRedistBinaries;OctoDeploy" >
+		<RemoveDir Directories="$(TempRedistRoot)"/>
+	</Target>
 </Project>

@@ -37,14 +37,21 @@ namespace Cms.Buildeploy.Tasks
 
         public string PushLocation { get; set; }
 
+        public bool NoDefaultExcludes { get; set; }
+
         protected override IPackageArchive CreatePackageArchive()
         {
             var archive = new NugetArchive(NugetExePath, Path.GetFullPath(NuspecFile), OutputDirectory, Version, Log);
             if (!string.IsNullOrWhiteSpace(PackageId))
+            { 
+                archive.AddProperty("Id", PackageId);
                 archive.AddProperty("PackageId", PackageId);
+            }
 
             archive.ApiKey = ApiKey;
             archive.PushLocation = PushLocation;
+            archive.NoDefaultExcludes = this.NoDefaultExcludes;
+
             return archive;
         }
 
@@ -84,6 +91,9 @@ namespace Cms.Buildeploy.Tasks
         internal string PushLocation { get; set; }
 
         internal string ApiKey { get; set; }
+
+        internal bool NoDefaultExcludes { get; set; }
+
         internal void AddProperty(string name, string value)
         {
             properties.Add(name, value);
@@ -127,6 +137,10 @@ namespace Cms.Buildeploy.Tasks
             {
                 commandLine.AppendFormat(CultureInfo.InvariantCulture,
                     "pack \"{0}\"  -NoPackageAnalysis -BasePath \"{1}\" -OutputDirectory \"{2}\" -Version {3}", nuspecFile, tempPath, nupkgTempDirectory, version);
+                if (this.NoDefaultExcludes)
+                {
+                    commandLine.Append(" -NoDefaultExcludes");
+                }
 
                 foreach (var fileName in Directory.GetFiles(nupkgTempDirectory))
                     File.Move(fileName, Path.Combine(outputDir, Path.GetFileName(fileName)));

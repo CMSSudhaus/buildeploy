@@ -34,7 +34,9 @@ namespace Cms.Buildeploy.Tasks
             {
                 foreach (var item in Files)
                 {
-                    string fileName = Path.GetFullPath(Path.Combine(LookupPath, item.GetMetadata("filename") + item.GetMetadata("extension")));
+                    var filePath = Path.Combine(LookupPath, item.GetMetadata("RelativeDir"));
+                    string fileName = Path.GetFullPath(Path.Combine(filePath, item.GetMetadata("filename") + item.GetMetadata("extension")));
+                    
                     if (!CheckFileExists(fileName)) return false;
                     resultFileNames.Add(fileName);
                     if (string.Equals(item.GetMetadata("AddReferences"), "true", StringComparison.OrdinalIgnoreCase))
