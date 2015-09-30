@@ -37,6 +37,10 @@
      TaskName="Cms.Buildeploy.Tasks.GenerateVersionPattern"
      AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
+  <UsingTask
+     TaskName="Cms.Buildeploy.Tasks.Zip"
+     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+
   <Target Name="Configurations">
     <CreateItem Include="$(TargetConfigurations)">
       <Output TaskParameter="Include" ItemName="Configuration" />
@@ -242,10 +246,11 @@
     <Error Condition="$(Version)==''" Text="Property 'Version' is not specified."/>
 
     <Exec
-      Command="$(OctoExePath) create-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --version $(Version) --packageversion $(Version) --releasenotes &quot;%(OctoConfig.ReleaseNotes)&quot;"
+      Command="$(OctoExePath) create-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --version $(Version) --packageversion $(Version) --releasenotes &quot;%(OctoConfig.ReleaseNotes)&quot; %(OctoConfig.CreateReleaseOptions)"
       Condition="%(OctoConfig.OctopusProject)!=''"/>
     <Exec
       Command="$(OctoExePath) deploy-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --deployto=%(OctoConfig.DeployEnviroment) --version $(Version) --waitfordeployment"
+	  IgnoreStandardErrorWarningFormat="True"
       Condition="%(OctoConfig.DeployEnviroment)!=''"/>
   </Target>
   <Target Name="BeforeRedistBinaries"/>
@@ -346,12 +351,16 @@
     <ItemGroup>
       <ClientRedistFiles Include="$(TempClientRedist)\**"/>
       <ServerRedistFiles Include="$(TempServerRedist)\**"/>
+	  <PdbFiles Include="$(CompileOutput)\**\*.pdb"/>
     </ItemGroup>
 
     <Copy SourceFiles="@(RedistFiles)" DestinationFolder="$(VersionRedistRoot)\%(RecursiveDir)"/>
-    <!--<Zip Files="@(ClientRedistFiles)" WorkingDirectory="$(TempClientRedist)" ZipFileName="$(VersionRedistRoot)\Client-v$(Version).zip" />
-    <Zip Files="@(ServerRedistFiles)" WorkingDirectory="$(TempServerRedist)" ZipFileName="$(VersionRedistRoot)\Server-v$(Version).zip" />-->
-
+    <Zip Files="@(ClientRedistFiles)" WorkingDirectory="$(TempClientRedist)" ZipFileName="$(VersionRedistRoot)\Client-v$(Version).zip" />
+    <Zip Files="@(ServerRedistFiles)" WorkingDirectory="$(TempServerRedist)" ZipFileName="$(VersionRedistRoot)\Server-v$(Version).zip" />
+    
+    
+	<Zip Files="@(PdbFiles)" WorkingDirectory="$(CompileOutput)" ZipFileName="$(VersionRedistRoot)\Symbols-v$(Version).zip" />
+	
 
   </Target>
 

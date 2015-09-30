@@ -24,8 +24,6 @@ namespace Cms.Buildeploy.Tasks
     /// </summary>
     public abstract class PackageTaskBase : Task
     {
-
-
         private readonly HashSet<string> addedDirs = new HashSet<string>();
         private readonly HashSet<string> fileEntries = new HashSet<string>();
 

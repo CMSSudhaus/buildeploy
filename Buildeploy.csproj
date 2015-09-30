@@ -38,6 +38,8 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Deployment" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -66,6 +68,8 @@
     <Compile Include="Tasks\NugetPackage.cs" />
     <Compile Include="Tasks\PackageTaskBase.cs" />
     <Compile Include="Tasks\ResolveRedistAssemblies.cs" />
+    <Compile Include="Tasks\Zip.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Buildeploy.ruleset" />
