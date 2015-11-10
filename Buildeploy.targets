@@ -215,7 +215,7 @@
     <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(OctoConfig.Identity)_$(Version).zip"
           DestinationFolder="%(OctoConfig.DeployCopyPath)"
           Condition="%(OctoConfig.DeployCopyPath)!=''"/>
-	
+
     <ItemGroup>
       <ServerRedistFiles Include="$(VersionRedistRoot)\Server\*.*"/>
     </ItemGroup>
@@ -230,12 +230,12 @@
   </ItemGroup>
 
   <Target Name="NugetRestore" Inputs="@(PackagesConfig)" Outputs="NotUsedOutput" Condition="$(NugetExe)!='' and $(NugetPackagesSource)!=''">
-	<PropertyGroup>
-		<NoCacheOption Condition="$(NugetRestoreNoCache)==true">-NoCache</NoCacheOption>
-	</PropertyGroup>
+    <PropertyGroup>
+      <NoCacheOption Condition="$(NugetRestoreNoCache)==true">-NoCache</NoCacheOption>
+    </PropertyGroup>
     <Exec Command="$(NugetExe) restore %(PackagesConfig.FullPath) -Source $(NugetPackagesSource) -PackagesDirectory $(MSBuildProjectDirectory)\packages $(NoCacheOption)"  />
   </Target>
-  
+
   <Target Name="OctoDeploy" Inputs="@(OctoConfig)" Outputs="NotUsedOutput">
     <PropertyGroup>
       <PackagesDirPath>$(VersionRedistRoot)\Packages</PackagesDirPath>
@@ -268,6 +268,21 @@
 
   </Target>
 
+
+  <PropertyGroup>
+      <MSTestExe Condition="$(MSTestExe)=='' AND $(VS120COMNTOOLS)!=''">$(VS120COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
+      <MSTestExe Condition="$(MSTestExe)=='' AND $(VS110COMNTOOLS)!=''">$(VS110COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
+      <MSTestExe Condition="$(MSTestExe)=='' AND $(VS100COMNTOOLS)!=''">$(VS100COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
+    </PropertyGroup>
+    
+  <Target Name="RunMSTestMultipleProcesses" Inputs="@(MSTestAssembly)" Outputs="%(MSTestAssembly.FileName).trc">
+    <MSTest
+      MSTestExe="$(MSTestExe)"
+      Assemblies="%(MSTestAssembly.FileName)%(MSTestAssembly.Extension)"
+      Condition="$(SkipMSTest)!=true"
+      WorkingDirectory="bin\$(RedistConfiguration)"
+      Category="$(MSTestCategory)"/>
+  </Target>
   <Target Name="RedistBinaries">
 
     <CallTarget Targets="BeforeRedistBinaries"/>
@@ -308,19 +323,16 @@
     <MakeDir Directories="$(TempRedistRoot)\Client"/>
 
     <NUnit Assemblies="@(NUnitAssembly)" ToolPath="$(LibPath)" Condition="@(NUnitAssembly)!=''" WorkingDirectory="bin\$(RedistConfiguration)"/>
-    <PropertyGroup>
-      <MSTestExe Condition="$(MSTestExe)=='' AND $(VS120COMNTOOLS)!=''">$(VS120COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
-      <MSTestExe Condition="$(MSTestExe)=='' AND $(VS110COMNTOOLS)!=''">$(VS110COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
-      <MSTestExe Condition="$(MSTestExe)=='' AND $(VS100COMNTOOLS)!=''">$(VS100COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
-    </PropertyGroup>
+
 
     <MSTest
       MSTestExe="$(MSTestExe)"
       Assemblies="@(MSTestAssembly)"
-      Condition="$(SkipMSTest)!=true and @(MSTestAssembly)!=''"
+      Condition="$(SkipMSTest)!=true and @(MSTestAssembly)!='' and $(MSTestMultiProcess)!=true"
       WorkingDirectory="bin\$(RedistConfiguration)"
       Category="$(MSTestCategory)"/>
 
+    <CallTarget Targets="RunMSTestMultipleProcesses" Condition="$(MSTestMultiProcess)==true"/>
     <ResolveRedistAssemblies Files="@(ClientRedistFile)" LookUpPath="$(CompileOutput)">
       <Output TaskParameter="Result" ItemName="RedistPath"/>
     </ResolveRedistAssemblies>
@@ -336,7 +348,7 @@
     <Copy SourceFiles="@(ClientLibDependencyPath)" DestinationFolder="$(TempClientRedist)"/>
     <Copy SourceFiles="@(RedistWithTargetPath)" DestinationFiles = "@(RedistWithTargetPath->'$(TempClientRedist)\%(TargetPath)')"/>
     <Copy SourceFiles="@(ClientDependency)" DestinationFolder="$(TempClientRedist)"/>
-    <CallTarget Targets="CopyLocalizationFiles"/>
+    <CallTarget Targets="CopyLocalizationFiles" />
 
     <CheckReferences Path="$(TempClientRedist)" MessageInfo="Client" Excludes="@(CheckReferenceExclude)"/>
     <MakeDir Directories="$(TempServerRedist)"/>
@@ -351,16 +363,16 @@
     <ItemGroup>
       <ClientRedistFiles Include="$(TempClientRedist)\**"/>
       <ServerRedistFiles Include="$(TempServerRedist)\**"/>
-	  <PdbFiles Include="$(CompileOutput)\**\*.pdb"/>
+      <PdbFiles Include="$(CompileOutput)\**\*.pdb"/>
     </ItemGroup>
 
     <Copy SourceFiles="@(RedistFiles)" DestinationFolder="$(VersionRedistRoot)\%(RecursiveDir)"/>
     <Zip Files="@(ClientRedistFiles)" WorkingDirectory="$(TempClientRedist)" ZipFileName="$(VersionRedistRoot)\Client-v$(Version).zip" />
     <Zip Files="@(ServerRedistFiles)" WorkingDirectory="$(TempServerRedist)" ZipFileName="$(VersionRedistRoot)\Server-v$(Version).zip" />
-    
-    
-	<Zip Files="@(PdbFiles)" WorkingDirectory="$(CompileOutput)" ZipFileName="$(VersionRedistRoot)\Symbols-v$(Version).zip" />
-	
+
+
+    <Zip Files="@(PdbFiles)" WorkingDirectory="$(CompileOutput)" ZipFileName="$(VersionRedistRoot)\Symbols-v$(Version).zip" />
+
 
   </Target>
 
