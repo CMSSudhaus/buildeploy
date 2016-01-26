@@ -190,9 +190,9 @@ namespace Cms.Buildeploy
                     while (!reader.EndOfStream)
                     {
                         string line = reader.ReadLine();
-                        if (line.StartsWith(versionString) && !versionFound)
+                        if (line.StartsWith(versionString, StringComparison.Ordinal) && !versionFound)
                         {
-                            int versionEnd = line.IndexOf("\"", versionString.Length);
+                            int versionEnd = line.IndexOf("\"", versionString.Length, StringComparison.Ordinal);
                             if (versionEnd >= 0)
                             {
                                 string version = line.Substring(versionString.Length, versionEnd - versionString.Length);

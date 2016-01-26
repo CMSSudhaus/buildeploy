@@ -210,7 +210,8 @@
             PackageId="%(OctoConfig.PackageId)"
             PushLocation="%(OctoConfig.PushLocation)"
             ApiKey="%(OctoConfig.ApiKey)"
-            UseAssemblyProductName ="%(OctoConfig.UseAssemblyProductName)"
+            UseAssemblyProductName = "%(OctoConfig.UseAssemblyProductName)"
+            VersionTag="%(OctoConfig.VersionTag)"
             />
     <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(OctoConfig.Identity)_$(Version).zip"
           DestinationFolder="%(OctoConfig.DeployCopyPath)"

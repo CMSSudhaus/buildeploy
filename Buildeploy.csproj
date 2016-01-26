@@ -65,6 +65,7 @@
     <Compile Include="Tasks\ClickOnceTask.cs" />
     <Compile Include="Tasks\GenerateVersionPattern.cs" />
     <Compile Include="Tasks\MSTest.cs" />
+    <Compile Include="Tasks\NugetArchive.cs" />
     <Compile Include="Tasks\NugetPackage.cs" />
     <Compile Include="Tasks\PackageTaskBase.cs" />
     <Compile Include="Tasks\ResolveRedistAssemblies.cs" />
@@ -81,9 +82,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FrameworkAssemblies.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="packages\RefactoringEssentials.1.1.0\tools\analyzers\RefactoringEssentials.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
