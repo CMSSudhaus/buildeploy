@@ -59,6 +59,7 @@ namespace Cms.Buildeploy.Tasks
         [Required]
         public ITaskItem[] Files { get; set; }
 
+        public ITaskItem[] AdditionalClickOnceFiles { get; set; }
         public bool UrlParameters { get; set; }
 
         public string TargetFramework { get; set; }
@@ -75,6 +76,7 @@ namespace Cms.Buildeploy.Tasks
         public string IconFile { get; set; }
 
         public ITaskItem[] WebsiteFiles { get; set; }
+        public ITaskItem[] AdditionalWebsiteFiles { get; set; }
 
         public bool CombineWithWebsite { get; set; }
 
@@ -115,9 +117,13 @@ namespace Cms.Buildeploy.Tasks
                 if (WebsiteFiles != null && WebsiteFiles.Length > 0 && CombineWithWebsite)
                 {
                     targetDir = "ClickOnce";
-                    CompressFileSet(package, WebsiteBasePath, null, WebsiteFiles.Select(ti => ti.ItemSpec), false);
+                    CompressFileSet(package, WebsiteBasePath, null,
+                        WebsiteFiles.Select(f => f.ItemSpec).Concat(AdditionalWebsiteFiles.Select(f => f.ItemSpec)),
+                        false);
                 }
-                CompressFileSet(package, BasePath, targetDir, Files.Select(f => f.ItemSpec), CombineWithWebsite);
+                CompressFileSet(package, BasePath, targetDir,
+                    Files.Select(f => f.ItemSpec).Concat(AdditionalClickOnceFiles.Select(f => f.ItemSpec)),
+                    CombineWithWebsite);
 
                 if (additionalFiles != null)
                 {

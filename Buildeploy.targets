@@ -104,6 +104,7 @@
     <Message Text="%(ClickOnceConfig.ConfigFile)"/>
     <Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
     <Error Condition="$(Version)==''" Text="Property 'Version' is not specified."/>
+    <Error Condition="$(SemVersion)==''" Text="Property 'SemVersion' is not specified."/>
     <Error Condition="$(ClickOnceCertificate)==''" Text="Property 'ClickOnceCertificate' is not specified."/>
     <Error Condition="$(ProductName)==''" Text="Property 'ProductName' is not specified."/>
     <Error Condition="$(Publisher)==''" Text="Property 'Publisher' is not specified."/>
@@ -129,7 +130,7 @@
             Publisher="$(Publisher)"
             BaseUrl="%(ClickOnceConfig.BaseUrl)"
             UrlParameters="$(ClickOnceUrlParameters)"
-            ZipFile="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(ClickOnceConfig.Identity)_$(Version).zip"
+            ZipFile="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(ClickOnceConfig.Identity)_$(SemVersion).zip"
             MinimumRequiredVersion="%(ClickOnceConfig.MinimumRequiredVersion)"
             RequireLatestVersion="%(ClickOnceConfig.RequireLatestVersion)"
             Version="$(Version)"
@@ -141,8 +142,10 @@
             WebsiteFiles="@(CompiledSite)"
             LinkAssembliesWithManifestAsFile="$(ClickOnceLinkAssembliesWithManifestAsFile)"
             UseAssemblyProductName ="%(ClickOnceConfig.UseAssemblyProductName)"
+            AdditionalClickOnceFiles="%(ClickOnceConfig.AdditionalClickOnceFiles)"
+            AdditionalWebsiteFiles="%(ClickOnceConfig.AdditionalWebsiteFiles)"
             />
-    <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(ClickOnceConfig.Identity)_$(Version).zip"
+    <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(ClickOnceConfig.Identity)_$(SemVersion).zip"
           DestinationFolder="%(ClickOnceConfig.DeployCopyPath)"
           Condition="%(ClickOnceConfig.DeployCopyPath)!=''"/>
 
@@ -162,6 +165,7 @@
     <Error Condition="$(NugetExe)==''" Text="Property 'NugetExe' is not specified."/>
     <Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
     <Error Condition="$(Version)==''" Text="Property 'Version' is not specified."/>
+    <Error Condition="$(SemVersion)==''" Text="Property 'SemVersion' is not specified."/>
     <Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(ClickOnceCertificate)==''" Text="Property 'ClickOnceCertificate' is not specified."/>
     <Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(ProductName)==''" Text="Property 'ProductName' is not specified."/>
     <Error Condition="%(OctoConfig.SkipClickOnce)!=true and $(Publisher)==''" Text="Property 'Publisher' is not specified."/>
@@ -212,8 +216,10 @@
             ApiKey="%(OctoConfig.ApiKey)"
             UseAssemblyProductName = "%(OctoConfig.UseAssemblyProductName)"
             VersionTag="%(OctoConfig.VersionTag)"
+            AdditionalClickOnceFiles="%(OctoConfig.AdditionalClickOnceFiles)"
+            AdditionalWebsiteFiles="%(OctoConfig.AdditionalWebsiteFiles)"
             />
-    <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(OctoConfig.Identity)_$(Version).zip"
+    <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(OctoConfig.Identity)_$(SemVersion).zip"
           DestinationFolder="%(OctoConfig.DeployCopyPath)"
           Condition="%(OctoConfig.DeployCopyPath)!=''"/>
 
@@ -244,13 +250,13 @@
     <MakeDir Directories="$(PackagesDirPath)"/>
     <Error Condition="$(NugetExe)==''" Text="Property 'NugetExe' is not specified."/>
     <Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
-    <Error Condition="$(Version)==''" Text="Property 'Version' is not specified."/>
+    <Error Condition="$(SemVersion)==''" Text="Property 'SemVersion' is not specified."/>
 
     <Exec
-      Command="$(OctoExePath) create-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --version $(Version) --packageversion $(Version) --releasenotes &quot;%(OctoConfig.ReleaseNotes)&quot; %(OctoConfig.CreateReleaseOptions)"
+      Command="$(OctoExePath) create-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --version $(SemVersion) --packageversion $(SemVersion) --releasenotes &quot;%(OctoConfig.ReleaseNotes)&quot; %(OctoConfig.CreateReleaseOptions)"
       Condition="%(OctoConfig.OctopusProject)!=''"/>
     <Exec
-      Command="$(OctoExePath) deploy-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --deployto=%(OctoConfig.DeployEnviroment) --version $(Version) --waitfordeployment"
+      Command="$(OctoExePath) deploy-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --deployto=%(OctoConfig.DeployEnviroment) --version $(SemVersion) --waitfordeployment"
 	  IgnoreStandardErrorWarningFormat="True"
       Condition="%(OctoConfig.DeployEnviroment)!=''"/>
   </Target>
@@ -314,8 +320,9 @@
 
 
     <PropertyGroup>
+      <SemVersion Condition="$(VersionTag)!=''">$(Version)-$(VersionTag)</SemVersion>
       <VersionRedistRoot Condition="$(DefaultVersionRedistRoot)!=''">$(DefaultVersionRedistRoot)</VersionRedistRoot>
-      <VersionRedistRoot Condition="$(DefaultVersionRedistRoot)==''">$(RedistRoot)\$(BuildDefinition)\$(Version)</VersionRedistRoot>
+      <VersionRedistRoot Condition="$(DefaultVersionRedistRoot)==''">$(RedistRoot)\$(BuildDefinition)\$(SemVersion)</VersionRedistRoot>
     </PropertyGroup>
 
     <RemoveDir Directories="$(TempRedistRoot)"/>
@@ -368,11 +375,11 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(RedistFiles)" DestinationFolder="$(VersionRedistRoot)\%(RecursiveDir)"/>
-    <Zip Files="@(ClientRedistFiles)" WorkingDirectory="$(TempClientRedist)" ZipFileName="$(VersionRedistRoot)\Client-v$(Version).zip" />
-    <Zip Files="@(ServerRedistFiles)" WorkingDirectory="$(TempServerRedist)" ZipFileName="$(VersionRedistRoot)\Server-v$(Version).zip" />
+    <Zip Files="@(ClientRedistFiles)" WorkingDirectory="$(TempClientRedist)" ZipFileName="$(VersionRedistRoot)\Client-v$(SemVersion).zip" />
+    <Zip Files="@(ServerRedistFiles)" WorkingDirectory="$(TempServerRedist)" ZipFileName="$(VersionRedistRoot)\Server-v$(SemVersion).zip" />
 
 
-    <Zip Files="@(PdbFiles)" WorkingDirectory="$(CompileOutput)" ZipFileName="$(VersionRedistRoot)\Symbols-v$(Version).zip" />
+    <Zip Files="@(PdbFiles)" WorkingDirectory="$(CompileOutput)" ZipFileName="$(VersionRedistRoot)\Symbols-v$(SemVersion).zip" />
 
 
   </Target>
@@ -425,7 +432,6 @@
       <CompiledSite Include="$(CompiledSite)\**\*.*" Exclude="$(CompiledSite)\**\*.csproj;$(CompiledSite)\**\*.user;$(CompiledSite)\obj\**;$(CompiledSite)\**\web*.config;$(CompiledSite)\**\*.snk;$(CompiledSite)\**\*.log" />
     </ItemGroup>
     <Copy SourceFiles="@(CompiledSite)" DestinationFolder="$(WebsiteRedistDir)\%(RecursiveDir)" Condition="$(WebsiteRedistDir) != ''" />
-    <!--<Zip Files="@(CompiledSite)" WorkingDirectory="Temp\Compiledsite" ZipFileName="$(VersionRedistRoot)\Site-v$(Version).zip" />-->
   </Target>
 
   <Target Name="Redist" DependsOnTargets="RedistBinaries;PrecompileWeb;ClickOnce;OctoPackage;RedistProjects;AfterRedistBinaries;OctoDeploy" >
