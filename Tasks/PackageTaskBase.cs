@@ -59,7 +59,6 @@ namespace Cms.Buildeploy.Tasks
         [Required]
         public ITaskItem[] Files { get; set; }
 
-        public ITaskItem[] AdditionalClickOnceFiles { get; set; }
         public bool UrlParameters { get; set; }
 
         public string TargetFramework { get; set; }
@@ -76,8 +75,26 @@ namespace Cms.Buildeploy.Tasks
         public string IconFile { get; set; }
 
         public ITaskItem[] WebsiteFiles { get; set; }
-        public ITaskItem[] AdditionalWebsiteFiles { get; set; }
 
+        public ITaskItem[] PackageFilterRefs { get; set; }
+        public string PackageFilter { get; set; }
+
+        private string[] packageFilterParts;
+        private string[] PackageFilterParts
+        {
+            get
+            {
+                if (packageFilterParts == null)
+                {
+                    if (!string.IsNullOrWhiteSpace(PackageFilter))
+                        packageFilterParts = PackageFilter.Split(';');
+                    else
+                        packageFilterParts = new string[0];
+                }
+
+                return packageFilterParts;
+            }
+        }
         public bool CombineWithWebsite { get; set; }
 
         public bool LinkAssembliesWithManifestAsFile { get; set; }
@@ -105,6 +122,26 @@ namespace Cms.Buildeploy.Tasks
                 return entryName;
         }
 
+
+        private ITaskItem GetPackageFilterRef(ITaskItem item)
+        {
+            const string fileNameMetadata = "Filename";
+            if (PackageFilterRefs == null || item == null) return null;
+            return PackageFilterRefs.FirstOrDefault(r => r.GetMetadata(fileNameMetadata) == item.GetMetadata(fileNameMetadata));
+        }
+        private bool MatchFilter(ITaskItem fileItem)
+        {
+            if (fileItem == null) return false;
+            string fileFilter = fileItem.GetMetadata(nameof(PackageFilter));
+            if (string.IsNullOrWhiteSpace(fileFilter))
+                return true;
+
+            string[] filterParts = fileFilter.Split(';');
+
+            return filterParts.Intersect(PackageFilterParts).Any();
+        }
+
+
         private bool CompressFiles(IList<PackageFileInfo> additionalFiles)
         {
             using (IPackageArchive package = CreatePackageArchive())
@@ -117,13 +154,11 @@ namespace Cms.Buildeploy.Tasks
                 if (WebsiteFiles != null && WebsiteFiles.Length > 0 && CombineWithWebsite)
                 {
                     targetDir = "ClickOnce";
-                    CompressFileSet(package, WebsiteBasePath, null,
-                        WebsiteFiles.Select(f => f.ItemSpec).Concat(AdditionalWebsiteFiles.Select(f => f.ItemSpec)),
-                        false);
+                    CompressFileSet(package, WebsiteBasePath, null, WebsiteFiles
+                        .Where(f => MatchFilter(GetPackageFilterRef(f)))
+                        .Select(f => f.ItemSpec), false);
                 }
-                CompressFileSet(package, BasePath, targetDir,
-                    Files.Select(f => f.ItemSpec).Concat(AdditionalClickOnceFiles.Select(f => f.ItemSpec)),
-                    CombineWithWebsite);
+                CompressFileSet(package, BasePath, targetDir, Files.Where(MatchFilter).Select(f => f.ItemSpec), CombineWithWebsite);
 
                 if (additionalFiles != null)
                 {

@@ -142,8 +142,7 @@
             WebsiteFiles="@(CompiledSite)"
             LinkAssembliesWithManifestAsFile="$(ClickOnceLinkAssembliesWithManifestAsFile)"
             UseAssemblyProductName ="%(ClickOnceConfig.UseAssemblyProductName)"
-            AdditionalClickOnceFiles="%(ClickOnceConfig.AdditionalClickOnceFiles)"
-            AdditionalWebsiteFiles="%(ClickOnceConfig.AdditionalWebsiteFiles)"
+            PackageFilter="%(ClickOnceConfig.PackageFilter)"
             />
     <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(ClickOnceConfig.Identity)_$(SemVersion).zip"
           DestinationFolder="%(ClickOnceConfig.DeployCopyPath)"
@@ -216,8 +215,8 @@
             ApiKey="%(OctoConfig.ApiKey)"
             UseAssemblyProductName = "%(OctoConfig.UseAssemblyProductName)"
             VersionTag="%(OctoConfig.VersionTag)"
-            AdditionalClickOnceFiles="%(OctoConfig.AdditionalClickOnceFiles)"
-            AdditionalWebsiteFiles="%(OctoConfig.AdditionalWebsiteFiles)"
+            PackageFilter="%(OctoConfig.PackageFilter)"
+            PackageFilterRefs="@(WebSiteDependency)"
             />
     <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(OctoConfig.Identity)_$(SemVersion).zip"
           DestinationFolder="%(OctoConfig.DeployCopyPath)"
@@ -321,6 +320,7 @@
 
     <PropertyGroup>
       <SemVersion Condition="$(VersionTag)!=''">$(Version)-$(VersionTag)</SemVersion>
+      <SemVersion Condition="$(VersionTag)==''">$(Version)</SemVersion>
       <VersionRedistRoot Condition="$(DefaultVersionRedistRoot)!=''">$(DefaultVersionRedistRoot)</VersionRedistRoot>
       <VersionRedistRoot Condition="$(DefaultVersionRedistRoot)==''">$(RedistRoot)\$(BuildDefinition)\$(SemVersion)</VersionRedistRoot>
     </PropertyGroup>
