@@ -131,7 +131,8 @@ namespace Cms.Buildeploy.Tasks
         }
         private bool MatchFilter(ITaskItem fileItem)
         {
-            if (fileItem == null) return false;
+            fileItem = GetPackageFilterRef(fileItem);
+            if (fileItem == null) return true;
             string fileFilter = fileItem.GetMetadata(nameof(PackageFilter));
             if (string.IsNullOrWhiteSpace(fileFilter))
                 return true;
@@ -155,10 +156,12 @@ namespace Cms.Buildeploy.Tasks
                 {
                     targetDir = "ClickOnce";
                     CompressFileSet(package, WebsiteBasePath, null, WebsiteFiles
-                        .Where(f => MatchFilter(GetPackageFilterRef(f)))
+                        .Where(MatchFilter)
                         .Select(f => f.ItemSpec), false);
                 }
-                CompressFileSet(package, BasePath, targetDir, Files.Where(MatchFilter).Select(f => f.ItemSpec), CombineWithWebsite);
+                CompressFileSet(package, BasePath, targetDir, Files
+                    .Where(MatchFilter)
+                    .Select(f => f.ItemSpec), CombineWithWebsite);
 
                 if (additionalFiles != null)
                 {
@@ -279,7 +282,7 @@ namespace Cms.Buildeploy.Tasks
 
             Dictionary<string, AssemblyIdentity> addedIdentities = new Dictionary<string, AssemblyIdentity>();
             string basePath = Path.GetFullPath(BasePath);
-            foreach (var taskItem in Files)
+            foreach (var taskItem in Files.Where(MatchFilter))
             {
                 string filePath = taskItem.GetMetadata("FullPath");
                 string targetPath = null;

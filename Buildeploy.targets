@@ -81,13 +81,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <LibLocalizationItems Include="$(LibPath)\%(LocalizationCulture.FileName)\*.dll"/>
       <AdditionalLocalizationItems Include="$(LocalizationFilesPath)\%(LocalizationCulture.FileName)\*.dll"/>
       <LocalizationItems Include="$(CompileOutput)\%(LocalizationCulture.FileName)\*.dll"/>
     </ItemGroup>
     <MakeDir Directories="$(TempClientRedist)\%(LocalizationCulture.FileName)"/>
 
-    <Copy SourceFiles="@(LibLocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)" />
+    
     <Copy SourceFiles="@(LocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)"/>
     <Copy SourceFiles="@(AdditionalLocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)"/>
   </Target>
@@ -216,7 +215,7 @@
             UseAssemblyProductName = "%(OctoConfig.UseAssemblyProductName)"
             VersionTag="%(OctoConfig.VersionTag)"
             PackageFilter="%(OctoConfig.PackageFilter)"
-            PackageFilterRefs="@(WebSiteDependency)"
+            PackageFilterRefs="@(WebSiteDependency);@(ClientRedistFile)"
             />
     <Copy SourceFiles="$(VersionRedistRoot)\ClickOnce\$(ClickOnceFilePrefix)%(OctoConfig.Identity)_$(SemVersion).zip"
           DestinationFolder="%(OctoConfig.DeployCopyPath)"
@@ -255,7 +254,7 @@
       Command="$(OctoExePath) create-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --version $(SemVersion) --packageversion $(SemVersion) --releasenotes &quot;%(OctoConfig.ReleaseNotes)&quot; %(OctoConfig.CreateReleaseOptions)"
       Condition="%(OctoConfig.OctopusProject)!=''"/>
     <Exec
-      Command="$(OctoExePath) deploy-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --deployto=%(OctoConfig.DeployEnviroment) --version $(SemVersion) --waitfordeployment"
+      Command="$(OctoExePath) deploy-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --deployto=%(OctoConfig.DeployEnviroment) --version $(SemVersion) %(OctoConfig.DeployReleaseOptions) --waitfordeployment"
 	  IgnoreStandardErrorWarningFormat="True"
       Condition="%(OctoConfig.DeployEnviroment)!=''"/>
   </Target>
@@ -329,9 +328,6 @@
     <CallTarget Targets="Build" Condition="$(SkipBuild) != true"/>
 
     <MakeDir Directories="$(TempRedistRoot)\Client"/>
-
-    <NUnit Assemblies="@(NUnitAssembly)" ToolPath="$(LibPath)" Condition="@(NUnitAssembly)!=''" WorkingDirectory="bin\$(RedistConfiguration)"/>
-
 
     <MSTest
       MSTestExe="$(MSTestExe)"
