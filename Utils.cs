@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Cms.Buildeploy
 {
-    static class Utils
+    public static class Utils
     {
         /// <summary>
         /// http://stackoverflow.com/questions/275689/how-to-get-relative-path-from-absolute-path
@@ -30,6 +31,23 @@ namespace Cms.Buildeploy
             String relativePath = Uri.UnescapeDataString(relativeUri.ToString());
 
             return relativePath.Replace('/', Path.DirectorySeparatorChar);
+        }
+
+        public static string GetGitBranchName()
+        {
+            for (var di = new DirectoryInfo(Directory.GetCurrentDirectory()); di != null; di = di.Parent)
+            {
+                string gitRepositoryDirName = Path.Combine(di.FullName, ".git");
+                if (Directory.Exists(gitRepositoryDirName))
+                {
+                    string head = File.ReadAllText(Path.Combine(gitRepositoryDirName, "HEAD"));
+                    var match = Regex.Match(head, "ref: refs/heads/(.*)");
+                    if (match != null && match.Success)
+                        return match.Groups[1].Value;
+                }
+            }
+
+            return null;
         }
     }
 }

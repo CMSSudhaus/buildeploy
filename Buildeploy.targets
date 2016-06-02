@@ -41,6 +41,10 @@
      TaskName="Cms.Buildeploy.Tasks.Zip"
      AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
+  <UsingTask
+     TaskName="Cms.Buildeploy.Tasks.GetGitBranchName"
+     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+
   <Target Name="Configurations">
     <CreateItem Include="$(TargetConfigurations)">
       <Output TaskParameter="Include" ItemName="Configuration" />
@@ -70,8 +74,13 @@
 
     <MSBuild Projects="@(ProjectToBuild)"
                  Properties="Configuration=%(Configuration.Identity);OutDir=$(CompileOutputFolder);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL)"
-                 StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="Clean;Rebuild"/>
+                 StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="Clean;Rebuild"
+                 Condition="$(CopyBuildResultsFromFolder)==''"/>
 
+    <ItemGroup>
+      <BuildFiles Include="$(CopyBuildResultsFromFolder)\**" Condition="$(CopyBuildResultsFromFolder)!=''"/>
+    </ItemGroup>
+    <Copy SourceFiles="@(BuildFiles)" DestinationFiles="@(BuildFiles->'$(CompileOutputFolder)\%(RecursiveDir)%(FileName)%(Extension)')" Condition="$(CopyBuildResultsFromFolder)!=''" />
   </Target>
 
   <Target Name="CopyLocalizationFilesPerCulture" Inputs="@(LocalizationCulture)" Outputs="target\%(LocalizationCulture.FileName)">
@@ -86,7 +95,7 @@
     </ItemGroup>
     <MakeDir Directories="$(TempClientRedist)\%(LocalizationCulture.FileName)"/>
 
-    
+
     <Copy SourceFiles="@(LocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)"/>
     <Copy SourceFiles="@(AdditionalLocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)"/>
   </Target>
@@ -158,6 +167,8 @@
   <Target Name="OctoPackage" Inputs="@(OctoConfig)" Outputs="NotUsedOutput">
     <PropertyGroup>
       <PackagesDirPath>$(VersionRedistRoot)\Packages</PackagesDirPath>
+      <PackageVersionTag Condition="$(IsBranchBuild)">$(BranchName)</PackageVersionTag>
+      <PackageVersionTag Condition="!$(IsBranchBuild)">%(OctoConfig.VersionTag)</PackageVersionTag>
     </PropertyGroup>
     <MakeDir Directories="$(PackagesDirPath)"/>
     <Error Condition="$(NugetExe)==''" Text="Property 'NugetExe' is not specified."/>
@@ -177,7 +188,7 @@
       <CompiledSiteWithConfig Include="@(CompiledSite)"/>
       <CompiledSiteWithConfig Include="$(WebsiteSource)\Web*.config"/>
     </ItemGroup>
-
+    
     <NugetPackage
             ConfigName="%(OctoConfig.Identity)"
             NuspecFile="%(OctoConfig.NuspecFile)"
@@ -213,7 +224,7 @@
             PushLocation="%(OctoConfig.PushLocation)"
             ApiKey="%(OctoConfig.ApiKey)"
             UseAssemblyProductName = "%(OctoConfig.UseAssemblyProductName)"
-            VersionTag="%(OctoConfig.VersionTag)"
+            VersionTag="$(PackageVersionTag)"
             PackageFilter="%(OctoConfig.PackageFilter)"
             PackageFilterRefs="@(WebSiteDependency);@(ClientRedistFile)"
             />
@@ -234,7 +245,7 @@
     <PackagesConfig Include="**\packages.config"/>
   </ItemGroup>
 
-  <Target Name="NugetRestore" Inputs="@(PackagesConfig)" Outputs="NotUsedOutput" Condition="$(NugetExe)!='' and $(NugetPackagesSource)!=''">
+  <Target Name="NugetRestore" Inputs="@(PackagesConfig)" Outputs="NotUsedOutput" Condition="$(NugetExe)!='' and $(NugetPackagesSource)!='' and $(CopyBuildResultsFromFolder)==''">
     <PropertyGroup>
       <NoCacheOption Condition="$(NugetRestoreNoCache)==true">-NoCache</NoCacheOption>
     </PropertyGroup>
@@ -244,6 +255,7 @@
   <Target Name="OctoDeploy" Inputs="@(OctoConfig)" Outputs="NotUsedOutput">
     <PropertyGroup>
       <PackagesDirPath>$(VersionRedistRoot)\Packages</PackagesDirPath>
+      <BranchVariableOption Condition="$(IsBranchBuild)">--variable=BranchName:$(BranchName)</BranchVariableOption>
     </PropertyGroup>
     <MakeDir Directories="$(PackagesDirPath)"/>
     <Error Condition="$(NugetExe)==''" Text="Property 'NugetExe' is not specified."/>
@@ -253,8 +265,10 @@
     <Exec
       Command="$(OctoExePath) create-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --version $(SemVersion) --packageversion $(SemVersion) --releasenotes &quot;%(OctoConfig.ReleaseNotes)&quot; %(OctoConfig.CreateReleaseOptions)"
       Condition="%(OctoConfig.OctopusProject)!=''"/>
+    
+    
     <Exec
-      Command="$(OctoExePath) deploy-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --deployto=%(OctoConfig.DeployEnviroment) --version $(SemVersion) %(OctoConfig.DeployReleaseOptions) --waitfordeployment"
+      Command="$(OctoExePath) deploy-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --deployto=%(OctoConfig.DeployEnviroment) --version $(SemVersion) %(OctoConfig.DeployReleaseOptions) $(BranchVariableOption) --waitfordeployment "
 	  IgnoreStandardErrorWarningFormat="True"
       Condition="%(OctoConfig.DeployEnviroment)!=''"/>
   </Target>
@@ -275,11 +289,11 @@
 
 
   <PropertyGroup>
-      <MSTestExe Condition="$(MSTestExe)=='' AND $(VS120COMNTOOLS)!=''">$(VS120COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
-      <MSTestExe Condition="$(MSTestExe)=='' AND $(VS110COMNTOOLS)!=''">$(VS110COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
-      <MSTestExe Condition="$(MSTestExe)=='' AND $(VS100COMNTOOLS)!=''">$(VS100COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
-    </PropertyGroup>
-    
+    <MSTestExe Condition="$(MSTestExe)=='' AND $(VS120COMNTOOLS)!=''">$(VS120COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
+    <MSTestExe Condition="$(MSTestExe)=='' AND $(VS110COMNTOOLS)!=''">$(VS110COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
+    <MSTestExe Condition="$(MSTestExe)=='' AND $(VS100COMNTOOLS)!=''">$(VS100COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
+  </PropertyGroup>
+
   <Target Name="RunMSTestMultipleProcesses" Inputs="@(MSTestAssembly)" Outputs="%(MSTestAssembly.FileName).trc">
     <MSTest
       MSTestExe="$(MSTestExe)"
@@ -316,10 +330,16 @@
       <Output TaskParameter="NewVersion" PropertyName="Version"/>
     </ChangeVersion>
 
+    <GetGitBranchName>
+      <Output TaskParameter ="BranchName" PropertyName="BranchName"/>
+    </GetGitBranchName>
+
+
 
     <PropertyGroup>
       <SemVersion Condition="$(VersionTag)!=''">$(Version)-$(VersionTag)</SemVersion>
       <SemVersion Condition="$(VersionTag)==''">$(Version)</SemVersion>
+      <SemVersion Condition="$(UseBranchNameForVersionTag)">$(Version)-$(BranchName)</SemVersion>
       <VersionRedistRoot Condition="$(DefaultVersionRedistRoot)!=''">$(DefaultVersionRedistRoot)</VersionRedistRoot>
       <VersionRedistRoot Condition="$(DefaultVersionRedistRoot)==''">$(RedistRoot)\$(BuildDefinition)\$(SemVersion)</VersionRedistRoot>
     </PropertyGroup>
@@ -382,7 +402,7 @@
 
   <Target Name="RedistProjects">
     <MSBuild Projects="@(RedistProject)"
-            Properties="Configuration=%(Configuration.Identity);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL);NugetExe=$(NugetExe);SkipBuild=True;RedistRoot=$(RedistRoot);VersionPattern=*.*.*.*;BuildDefinition=$(BuildDefinition)"
+            Properties="Configuration=%(Configuration.Identity);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL);NugetExe=$(NugetExe);SkipBuild=True;RedistRoot=$(RedistRoot);VersionPattern=*.*.*.*;BuildDefinition=$(BuildDefinition);UseBranchNameForVersionTag=$(UseBranchNameForVersionTag)"
             StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="RedistBinaries;PrecompileWeb;OctoPackage;ClickOnce;"/>
   </Target>
   <Target Name="AfterWebsiteCompiled" />

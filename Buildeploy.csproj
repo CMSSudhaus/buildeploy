@@ -64,6 +64,7 @@
     <Compile Include="Tasks\CheckReferences.cs" />
     <Compile Include="Tasks\ClickOnceTask.cs" />
     <Compile Include="Tasks\GenerateVersionPattern.cs" />
+    <Compile Include="Tasks\GetGitBranchName.cs" />
     <Compile Include="Tasks\MSTest.cs" />
     <Compile Include="Tasks\NugetArchive.cs" />
     <Compile Include="Tasks\NugetPackage.cs" />
