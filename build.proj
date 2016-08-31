@@ -22,4 +22,4 @@
 	<Exec ContinueOnError="false" Command="$(NuGetTool) push bin\Nuget\buildeploy.net.$(Version).nupkg $(ApiKey)" Condition="$(ApiKey)!=''"/>
   </Target>
   
- /Project>
+ </Project>

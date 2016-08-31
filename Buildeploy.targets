@@ -263,12 +263,12 @@
     <Error Condition="$(SemVersion)==''" Text="Property 'SemVersion' is not specified."/>
 
     <Exec
-      Command="$(OctoExePath) create-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --version $(SemVersion) --packageversion $(SemVersion) --releasenotes &quot;%(OctoConfig.ReleaseNotes)&quot; %(OctoConfig.CreateReleaseOptions)"
+      Command="$(OctoExePath) create-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=&quot;%(OctoConfig.OctopusProject)&quot; --version $(SemVersion) --packageversion $(SemVersion) --releasenotes &quot;%(OctoConfig.ReleaseNotes)&quot; %(OctoConfig.CreateReleaseOptions)"
       Condition="%(OctoConfig.OctopusProject)!=''"/>
     
     
     <Exec
-      Command="$(OctoExePath) deploy-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=%(OctoConfig.OctopusProject) --deployto=%(OctoConfig.DeployEnviroment) --version $(SemVersion) %(OctoConfig.DeployReleaseOptions) $(BranchVariableOption) --waitfordeployment "
+      Command="$(OctoExePath) deploy-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=&quot;%(OctoConfig.OctopusProject)&quot; --deployto=%(OctoConfig.DeployEnviroment) --version $(SemVersion) %(OctoConfig.DeployReleaseOptions) --waitfordeployment"
 	  IgnoreStandardErrorWarningFormat="True"
       Condition="%(OctoConfig.DeployEnviroment)!=''"/>
   </Target>
@@ -289,6 +289,7 @@
 
 
   <PropertyGroup>
+	<MSTestExe Condition="$(MSTestExe)=='' AND $(VS140COMNTOOLS)!=''">$(VS120COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
     <MSTestExe Condition="$(MSTestExe)=='' AND $(VS120COMNTOOLS)!=''">$(VS120COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
     <MSTestExe Condition="$(MSTestExe)=='' AND $(VS110COMNTOOLS)!=''">$(VS110COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
     <MSTestExe Condition="$(MSTestExe)=='' AND $(VS100COMNTOOLS)!=''">$(VS100COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
