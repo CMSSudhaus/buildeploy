@@ -3,7 +3,7 @@
   <metadata>
     <id>Buildeploy.net</id>
     <version>$version$</version>
-    <title>Buideploy</title>
+    <title>Buildeploy</title>
     <authors>Sergej Derjabkin</authors>
     <owners>Sergej Derjabkin</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
