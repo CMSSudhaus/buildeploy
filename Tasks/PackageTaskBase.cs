@@ -490,14 +490,15 @@ namespace Cms.Buildeploy.Tasks
             {
                 for (int i = 0; i < EntryPoints.Length; i++)
                 {
-                    if (!CreateManifests(EntryPoints[i].ItemSpec, additionalFiles, filesToDelete))
+                    
+                    if (!CreateManifests(EntryPoints[i].ItemSpec, EntryPoints[i].GetMetadata(nameof(BaseUrl)), additionalFiles, filesToDelete))
                         return false;
                 }
 
             }
             else
             {
-                if (!CreateManifests(EntryPoint, additionalFiles, filesToDelete))
+                if (!CreateManifests(EntryPoint, null, additionalFiles, filesToDelete))
                     return false;
             }
 
@@ -514,7 +515,8 @@ namespace Cms.Buildeploy.Tasks
             return true;
         }
 
-        private bool CreateManifests(string entryPoint, List<PackageFileInfo> additionalFiles, List<string> filesToDelete)
+
+        private bool CreateManifests(string entryPoint, string baseUrl, List<PackageFileInfo> additionalFiles, List<string> filesToDelete)
         {
             string configFileName;
             string entryPointFilePath;
@@ -536,7 +538,7 @@ namespace Cms.Buildeploy.Tasks
 
             ManifestWriter.WriteManifest(appManifest, appManifestTempFileName);
             SecurityUtilities.SignFile(Certificate.ItemSpec, GetCertPassword(), null, appManifestTempFileName);
-            string deploymentUrl = BuildDeploymentUrl(deployManifestFileName);
+            string deploymentUrl = BuildDeploymentUrl(deployManifestFileName, baseUrl);
             DeployManifest deployManifest = CreateDeployManifest(
                 appManifest,
                 appManifestTempFileName,
@@ -561,9 +563,11 @@ namespace Cms.Buildeploy.Tasks
             return true;
         }
 
-        private string BuildDeploymentUrl(string manifestFileName)
+        private string BuildDeploymentUrl(string manifestFileName, string baseUrl)
         {
-            string baseUrl = BaseUrl;
+            if (string.IsNullOrWhiteSpace(baseUrl))
+                baseUrl = BaseUrl;
+
             if (!string.IsNullOrWhiteSpace(baseUrl))
             {
                 if (!baseUrl.EndsWith("/", StringComparison.Ordinal))
