@@ -167,8 +167,8 @@
   <Target Name="OctoPackage" Inputs="@(OctoConfig)" Outputs="NotUsedOutput">
     <PropertyGroup>
       <PackagesDirPath>$(VersionRedistRoot)\Packages</PackagesDirPath>
-      <PackageVersionTag Condition="$(IsBranchBuild)">$(BranchName)</PackageVersionTag>
-      <PackageVersionTag Condition="!$(IsBranchBuild)">%(OctoConfig.VersionTag)</PackageVersionTag>
+      <PackageVersionTag Condition="$(IsBranchBuild)==true">$(BranchName)</PackageVersionTag>
+      <PackageVersionTag Condition="$(IsBranchBuild)!=true">%(OctoConfig.VersionTag)</PackageVersionTag>
     </PropertyGroup>
     <MakeDir Directories="$(PackagesDirPath)"/>
     <Error Condition="$(NugetExe)==''" Text="Property 'NugetExe' is not specified."/>
@@ -202,6 +202,7 @@
             ConfigFile="%(OctoConfig.ConfigFile)"
             EntryPoint="$(ClickOnceEntryPoint)"
             EntryPoints="%(OctoConfig.EntryPoints)"
+            EntryPointsUrls="%(OctoConfig.EntryPointsUrls)"
             Files="@(ClientRedistFiles)"
             Install="%(OctoConfig.Install)"
             LocalProduct="%(OctoConfig.ProductName)"
@@ -249,13 +250,14 @@
     <PropertyGroup>
       <NoCacheOption Condition="$(NugetRestoreNoCache)==true">-NoCache</NoCacheOption>
     </PropertyGroup>
-    <Exec Command="$(NugetExe) restore %(PackagesConfig.FullPath) -Source $(NugetPackagesSource) -PackagesDirectory $(MSBuildProjectDirectory)\packages $(NoCacheOption)"  />
+    <Exec Command="$(NugetExe) restore %(PackagesConfig.FullPath) -Source $(NugetPackagesSource) -PackagesDirectory $(MSBuildProjectDirectory)\packages $(NoCacheOption)"  
+          Condition="Exists(%(PackagesConfig.FullPath))"/>
   </Target>
 
   <Target Name="OctoDeploy" Inputs="@(OctoConfig)" Outputs="NotUsedOutput">
     <PropertyGroup>
       <PackagesDirPath>$(VersionRedistRoot)\Packages</PackagesDirPath>
-      <BranchVariableOption Condition="$(IsBranchBuild)">--variable=BranchName:$(BranchName)</BranchVariableOption>
+      <BranchVariableOption Condition="$(IsBranchBuild)==true">--variable=BranchName:$(BranchName)</BranchVariableOption>
     </PropertyGroup>
     <MakeDir Directories="$(PackagesDirPath)"/>
     <Error Condition="$(NugetExe)==''" Text="Property 'NugetExe' is not specified."/>

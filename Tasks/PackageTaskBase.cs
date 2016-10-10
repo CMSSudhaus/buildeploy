@@ -55,6 +55,7 @@ namespace Cms.Buildeploy.Tasks
         public ITaskItem Certificate { get; set; }
 
         public ITaskItem[] EntryPoints { get; set; }
+        public ITaskItem[] EntryPointsUrls { get; set; }
 
         [Required]
         public ITaskItem[] Files { get; set; }
@@ -490,8 +491,8 @@ namespace Cms.Buildeploy.Tasks
             {
                 for (int i = 0; i < EntryPoints.Length; i++)
                 {
-                    
-                    if (!CreateManifests(EntryPoints[i].ItemSpec, EntryPoints[i].GetMetadata(nameof(BaseUrl)), additionalFiles, filesToDelete))
+
+                    if (!CreateManifests(EntryPoints[i].ItemSpec, GetEntryPointUrl(i), additionalFiles, filesToDelete))
                         return false;
                 }
 
@@ -515,6 +516,17 @@ namespace Cms.Buildeploy.Tasks
             return true;
         }
 
+        private string GetEntryPointUrl(int index)
+        {
+
+            var url = EntryPoints[index].GetMetadata(nameof(BaseUrl));
+            if (!string.IsNullOrWhiteSpace(url)) return url;
+
+            if (EntryPointsUrls != null && EntryPointsUrls.Length > index)
+                return EntryPointsUrls[index].ItemSpec;
+
+            return null;
+        }
 
         private bool CreateManifests(string entryPoint, string baseUrl, List<PackageFileInfo> additionalFiles, List<string> filesToDelete)
         {
