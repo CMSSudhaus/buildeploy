@@ -405,8 +405,8 @@
 
   <Target Name="RedistProjects">
     <MSBuild Projects="@(RedistProject)"
-            Properties="Configuration=%(Configuration.Identity);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL);NugetExe=$(NugetExe);SkipBuild=True;RedistRoot=$(RedistRoot);VersionPattern=*.*.*.*;BuildDefinition=$(BuildDefinition);UseBranchNameForVersionTag=$(UseBranchNameForVersionTag)"
-            StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="RedistBinaries;PrecompileWeb;OctoPackage;ClickOnce;"/>
+            Properties="Configuration=%(Configuration.Identity);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL);NugetExe=$(NugetExe);SkipBuild=True;RedistRoot=$(RedistRoot);VersionPattern=*.*.*.*;BuildDefinition=$(BuildDefinition);UseBranchNameForVersionTag=$(UseBranchNameForVersionTag);BranchName=$(BranchName)"
+             StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="RedistBinaries;PrecompileWeb;OctoPackage;OctoDeploy;ClickOnce;"/>
   </Target>
   <Target Name="AfterWebsiteCompiled" />
   <Target Name="PrecompileWeb"  Condition="$(WebsiteSource)!=''">
