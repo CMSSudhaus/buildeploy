@@ -45,6 +45,10 @@
      TaskName="Cms.Buildeploy.Tasks.GetGitBranchName"
      AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
+  <UsingTask
+     TaskName="Cms.Buildeploy.Tasks.EasyTest"
+     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+
   <Target Name="Configurations">
     <CreateItem Include="$(TargetConfigurations)">
       <Output TaskParameter="Include" ItemName="Configuration" />
@@ -188,7 +192,7 @@
       <CompiledSiteWithConfig Include="@(CompiledSite)"/>
       <CompiledSiteWithConfig Include="$(WebsiteSource)\Web*.config"/>
     </ItemGroup>
-    
+
     <NugetPackage
             ConfigName="%(OctoConfig.Identity)"
             NuspecFile="%(OctoConfig.NuspecFile)"
@@ -250,7 +254,7 @@
     <PropertyGroup>
       <NoCacheOption Condition="$(NugetRestoreNoCache)==true">-NoCache</NoCacheOption>
     </PropertyGroup>
-    <Exec Command="$(NugetExe) restore %(PackagesConfig.FullPath) -Source $(NugetPackagesSource) -PackagesDirectory $(MSBuildProjectDirectory)\packages $(NoCacheOption)"  
+    <Exec Command="$(NugetExe) restore %(PackagesConfig.FullPath) -Source $(NugetPackagesSource) -PackagesDirectory $(MSBuildProjectDirectory)\packages $(NoCacheOption)"
           Condition="Exists(%(PackagesConfig.FullPath))"/>
   </Target>
 
@@ -267,8 +271,8 @@
     <Exec
       Command="$(OctoExePath) create-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=&quot;%(OctoConfig.OctopusProject)&quot; --version $(SemVersion) --packageversion $(SemVersion) --releasenotes &quot;%(OctoConfig.ReleaseNotes)&quot; %(OctoConfig.CreateReleaseOptions)"
       Condition="%(OctoConfig.OctopusProject)!=''"/>
-    
-    
+
+
     <Exec
       Command="$(OctoExePath) deploy-release --server=%(OctoConfig.OctopusServerUrl) --apikey=%(OctoConfig.OctopusApiKey) -project=&quot;%(OctoConfig.OctopusProject)&quot; --deployto=%(OctoConfig.DeployEnviroment) --version $(SemVersion) %(OctoConfig.DeployReleaseOptions) --waitfordeployment"
 	  IgnoreStandardErrorWarningFormat="True"
@@ -291,7 +295,7 @@
 
 
   <PropertyGroup>
-	<MSTestExe Condition="$(MSTestExe)=='' AND $(VS140COMNTOOLS)!=''">$(VS120COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
+    <MSTestExe Condition="$(MSTestExe)=='' AND $(VS140COMNTOOLS)!=''">$(VS120COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
     <MSTestExe Condition="$(MSTestExe)=='' AND $(VS120COMNTOOLS)!=''">$(VS120COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
     <MSTestExe Condition="$(MSTestExe)=='' AND $(VS110COMNTOOLS)!=''">$(VS110COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
     <MSTestExe Condition="$(MSTestExe)=='' AND $(VS100COMNTOOLS)!=''">$(VS100COMNTOOLS)..\IDE\MSTest.exe</MSTestExe>
@@ -455,5 +459,8 @@
 
   <Target Name="Redist" DependsOnTargets="RedistBinaries;PrecompileWeb;ClickOnce;OctoPackage;RedistProjects;AfterRedistBinaries;OctoDeploy" >
     <RemoveDir Directories="$(TempRedistRoot)"/>
+  </Target>
+  <Target Name="EasyTests" DependsOnTargets="Build"  Inputs="@(EasyTestScript)"  Outputs="NotUsedOutput">
+    <EasyTest ScriptFile="%(EasyTestScript.Identity)"/>
   </Target>
 </Project>

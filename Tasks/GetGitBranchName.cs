@@ -17,5 +17,6 @@ namespace Cms.Buildeploy.Tasks
             BranchName = Utils.GetGitBranchName();
             return true;
         }
+
     }
 }

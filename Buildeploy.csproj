@@ -63,6 +63,7 @@
     <Compile Include="Tasks\ChangeVersion.cs" />
     <Compile Include="Tasks\CheckReferences.cs" />
     <Compile Include="Tasks\ClickOnceTask.cs" />
+    <Compile Include="Tasks\EasyTest.cs" />
     <Compile Include="Tasks\GenerateVersionPattern.cs" />
     <Compile Include="Tasks\GetGitBranchName.cs" />
     <Compile Include="Tasks\MSTest.cs" />
