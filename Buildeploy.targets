@@ -460,7 +460,13 @@
   <Target Name="Redist" DependsOnTargets="RedistBinaries;PrecompileWeb;ClickOnce;OctoPackage;RedistProjects;AfterRedistBinaries;OctoDeploy" >
     <RemoveDir Directories="$(TempRedistRoot)"/>
   </Target>
-  <Target Name="EasyTests" DependsOnTargets="Build"  Inputs="@(EasyTestScript)"  Outputs="NotUsedOutput">
-    <EasyTest ScriptFile="%(EasyTestScript.Identity)"/>
+  <Target Name="EasyTests" >
+     <PropertyGroup>
+        <EasyTestTargetDir>$(TempRedistRoot)\EasyTest</EasyTestTargetDir>
+     </PropertyGroup>
+    <MakeDir Directories="$(EasyTestTargetDir)"/>
+    <Copy SourceFiles="@(EasyTestScript)" DestinationFolder="$(EasyTestTargetDir)"/>
+    <Copy SourceFiles="$(EasyTestConfig)" DestinationFolder="$(TempRedistRoot)"/>
+    <EasyTest ScriptFile="$(EasyTestTargetDir)"/>
   </Target>
 </Project>
