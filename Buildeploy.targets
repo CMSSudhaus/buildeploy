@@ -49,6 +49,14 @@
      TaskName="Cms.Buildeploy.Tasks.EasyTest"
      AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
+  <UsingTask
+     TaskName="Cms.Buildeploy.Tasks.SqlServerRestoreDatabase"
+     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+
+  <UsingTask
+     TaskName="Cms.Buildeploy.Tasks.SqlServerDropDatabase"
+     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+
   <Target Name="Configurations">
     <CreateItem Include="$(TargetConfigurations)">
       <Output TaskParameter="Include" ItemName="Configuration" />
@@ -353,7 +361,7 @@
 
     <RemoveDir Directories="$(TempRedistRoot)"/>
     <CallTarget Targets="Build" Condition="$(SkipBuild) != true"/>
-
+    <CallTarget Targets="EasyTests" Condition="$(EasyTestConfig)!=''"/>
     <MakeDir Directories="$(TempRedistRoot)\Client"/>
 
     <MSTest
@@ -461,12 +469,22 @@
     <RemoveDir Directories="$(TempRedistRoot)"/>
   </Target>
   <Target Name="EasyTests" DependsOnTargets="Build" Condition="$(EasyTestConfig)!=''">
-     <PropertyGroup>
-        <EasyTestTargetDir>$(TempRedistRoot)\EasyTest</EasyTestTargetDir>
-     </PropertyGroup>
+    <PropertyGroup>
+      <EasyTestTargetDir>$(TempRedistRoot)\EasyTest</EasyTestTargetDir>
+    </PropertyGroup>
     <MakeDir Directories="$(EasyTestTargetDir)"/>
     <Copy SourceFiles="@(EasyTestScript)" DestinationFolder="$(EasyTestTargetDir)"/>
     <Copy SourceFiles="$(EasyTestConfig)" DestinationFolder="$(TempRedistRoot)"/>
-    <EasyTest ScriptsDirectory="$(EasyTestTargetDir)" TestExecutorPath="$(EasyTestExecutorPath)"/>
+    <SqlServerRestoreDatabase
+        ConnectionString="$(EasyTestConnectionString)"
+        DatabaseBackupPath="$(EasyTestDatabaseBackupPath)"
+        RestoreDatabaseName="$(EasyTestDatabaseName)"/>
+
+    <EasyTest ScriptsDirectory="$(EasyTestTargetDir)" TestExecutorPath="$(EasyTestExecutorPath)" DatabaseName="$(EasyTestDatabaseName)"/>
+
+    <SqlServerDropDatabase
+          ConnectionString="$(EasyTestConnectionString)"
+          DatabaseName="$(EasyTestDatabaseName)"/>
+
   </Target>
 </Project>

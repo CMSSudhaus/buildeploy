@@ -16,10 +16,14 @@ namespace Cms.Buildeploy.Tasks
 
         protected override string ToolName => "TestExecutor";
 
-        protected override string GenerateFullPathToTool() => TextExecutorPath;
+        protected override string GenerateFullPathToTool() => TestExecutorPath;
 
         [Required]
-        public string TextExecutorPath { get; set; }
+        public string TestExecutorPath { get; set; }
+
+        [Required]
+        public string DatabaseName { get; set; }
+
         public override bool Execute()
         {
             return base.Execute() && AnalyzeLogFile();
@@ -48,7 +52,7 @@ namespace Cms.Buildeploy.Tasks
         private string LogFilePath => Path.GetFullPath(Path.Combine(ScriptsDirectory, logFileName));
         protected override string GenerateCommandLineCommands()
         {
-            return $"\"{ScriptsDirectory}\" -l:{LogFilePath}";
+            return $"\"{ScriptsDirectory}\" -l:{LogFilePath} -o:DatabaseName={DatabaseName}";
         }
     }
 }
