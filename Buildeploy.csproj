@@ -71,6 +71,7 @@
     <Compile Include="Tasks\NugetPackage.cs" />
     <Compile Include="Tasks\PackageTaskBase.cs" />
     <Compile Include="Tasks\ResolveRedistAssemblies.cs" />
+    <Compile Include="Tasks\SqlServerRestoreDatabase.cs" />
     <Compile Include="Tasks\Zip.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
