@@ -16,10 +16,14 @@ namespace Cms.Buildeploy.Tasks
 
         protected override string ToolName => "TestExecutor";
 
-        protected override string GenerateFullPathToTool() => TestExecutorPath;
+        protected override string GenerateFullPathToTool() => string.IsNullOrWhiteSpace(PSExecPath) ? TestExecutorPath : PSExecPath;
 
         [Required]
         public string TestExecutorPath { get; set; }
+
+        public string PSExecPath { get; set; }
+
+        public string PSExecParameters { get; set; }
 
         [Required]
         public string DatabaseName { get; set; }
@@ -34,15 +38,15 @@ namespace Cms.Buildeploy.Tasks
         private bool AnalyzeLogFile()
         {
             var doc = XElement.Load(LogFilePath);
-            bool result = false;
+            bool result = true;
             foreach (var failedTest in doc.Elements("Test").Where(e => e.Attribute("Result")?.Value != "Passed"))
             {
-                result = true;
+                result = false;
                 var errorElement = failedTest.Element("Error");
                 if (errorElement != null)
                     Log.LogError("Test '{0}' failed: {1}, {2}",
                         failedTest.Attribute("Name").Value,
-                        errorElement.Attribute("Type").Value, 
+                        errorElement.Attribute("Type").Value,
                         errorElement.Element("Message").Value);
             }
 
@@ -52,7 +56,9 @@ namespace Cms.Buildeploy.Tasks
         private string LogFilePath => Path.GetFullPath(Path.Combine(ScriptsDirectory, logFileName));
         protected override string GenerateCommandLineCommands()
         {
-            return $"\"{ScriptsDirectory}\" -l:{LogFilePath} -o:DatabaseName={DatabaseName}";
+            string psexecArgs = string.IsNullOrWhiteSpace(PSExecParameters) ? "-i -s" : PSExecParameters;
+            return (string.IsNullOrWhiteSpace(PSExecPath) ? string.Empty : $"{psexecArgs} {TestExecutorPath} ") +
+                $"\"{Path.GetFullPath(ScriptsDirectory)}\" -l:{LogFilePath} -o:DatabaseName={DatabaseName}";
         }
     }
 }

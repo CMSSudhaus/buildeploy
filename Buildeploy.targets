@@ -465,7 +465,7 @@
     <Copy SourceFiles="@(CompiledSite)" DestinationFolder="$(WebsiteRedistDir)\%(RecursiveDir)" Condition="$(WebsiteRedistDir) != ''" />
   </Target>
 
-  <Target Name="Redist" DependsOnTargets="RedistBinaries;PrecompileWeb;ClickOnce;OctoPackage;RedistProjects;AfterRedistBinaries;OctoDeploy" >
+  <Target Name="Redist" DependsOnTargets="RedistBinaries;PrecompileWeb;ClickOnce;OctoPackage;RedistProjects;NuGetCreate;NuGetPush;AfterRedistBinaries;OctoDeploy" >
     <RemoveDir Directories="$(TempRedistRoot)"/>
   </Target>
   <Target Name="EasyTests" DependsOnTargets="Build" Condition="$(EasyTestConfig)!=''">
@@ -480,11 +480,25 @@
         DatabaseBackupPath="$(EasyTestDatabaseBackupPath)"
         RestoreDatabaseName="$(EasyTestDatabaseName)"/>
 
-    <EasyTest ScriptsDirectory="$(EasyTestTargetDir)" TestExecutorPath="$(EasyTestExecutorPath)" DatabaseName="$(EasyTestDatabaseName)"/>
+    <EasyTest ScriptsDirectory="$(EasyTestTargetDir)" TestExecutorPath="$(EasyTestExecutorPath)" DatabaseName="$(EasyTestDatabaseName)"
+              PSExecPath="$(PSExecPath)" PSExecParameters="$(PSExecParameters)"/>
 
     <SqlServerDropDatabase
           ConnectionString="$(EasyTestConnectionString)"
           DatabaseName="$(EasyTestDatabaseName)"/>
 
   </Target>
+  <Target Name="NuGetCreate" Inputs="@(NuspecFile)" Outputs="NotUsedOutput">
+    <MakeDir Directories="bin\nuget"/>
+    <PropertyGroup>
+      <CompileOutputFolder Condition="$(CompileOutputFolder)==''">$(MSBuildProjectDirectory)\bin\$(RedistConfiguration)\</CompileOutputFolder>
+    </PropertyGroup>
+    <Exec ContinueOnError="false" Command="$(NuGetExe) pack %(NuspecFile.Identity) -BasePath $(CompileOutputFolder) -OutputDirectory bin\NuGet -Version $(Version) -Properties SourceDir=$(CompileOutputFolder)"/>
+  </Target>
+
+  <Target Name="NuGetPush" Inputs="@(NugetPushUrl)" Outputs="NotUsedOutput" Condition="$(NugetLibApiKey)!=''">
+    <Exec ContinueOnError="false" Command="$(NuGetExe) push bin\nuget\*.nupkg -Source %(NugetPushUrl.Identity) -ApiKey $(NugetLibApiKey)" />
+  </Target>
+
+
 </Project>
