@@ -54,7 +54,7 @@
      AssemblyFile="$(BuildeployTasksAssemblyFile)" />
   
   <UsingTask
-    TaskName="Cms.Buildeploy.Tasks.DeleteLicxFiles"
+     TaskName="Cms.Buildeploy.Tasks.DeleteLicxFiles"
      AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
   <UsingTask
@@ -505,15 +505,14 @@
   </Target>
 
   <Target Name="DeleteLicx">
+    <Message Text="Delete Licx target is gonna be executed"></Message>
     <ItemGroup>
-      <ProjectFiles Include="$(SolutionDir)Ewlw.ProjectCalc.Module\Ewlw.ProjectCalc.Module.csproj"/>
-      <ProjectFiles Include="$(SolutionDir)Ewlw.ProjectCalc.Module.Win\Ewlw.ProjectCalc.Module.Win.csproj"/>
-      <ProjectFiles Include="$(SolutionDir)Ewlw.ProjectCalc.Module.Web\Ewlw.ProjectCalc.Module.Web.csproj"/>
-      <ProjectFiles Include="$(SolutionDir)Ewlw.ProjectCalc.Win\Ewlw.ProjectCalc.Win.csproj"/>
-      <ProjectFiles Include="$(SolutionDir)Ewlw.ProjectCalc.Web\Ewlw.ProjectCalc.Web.csproj"/>
+      <ProjectFiles Include="$(ProjectDir)\Ewlw.ProjectCalc.Module\Ewlw.ProjectCalc.Module.csproj"/>
+      <ProjectFiles Include="$(ProjectDir)\Ewlw.ProjectCalc.Module.Win\Ewlw.ProjectCalc.Module.Win.csproj"/>
+      <ProjectFiles Include="$(ProjectDir)\Ewlw.ProjectCalc.Module.Web\Ewlw.ProjectCalc.Module.Web.csproj"/>
+      <ProjectFiles Include="$(ProjectDir)\Ewlw.ProjectCalc.Win\Ewlw.ProjectCalc.Win.csproj"/>
+      <ProjectFiles Include="$(ProjectDir)\Ewlw.ProjectCalc.Web\Ewlw.ProjectCalc.Web.csproj"/>
     </ItemGroup>
     <DeleteLicxFiles />
   </Target>
-
-
 </Project>

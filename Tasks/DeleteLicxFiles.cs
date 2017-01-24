@@ -22,11 +22,11 @@ namespace Cms.Buildeploy.Tasks
 
                    var project = new Project(File.ReadAllText(projectFile.ItemSpec));
                    var license = project.GetItems("EmbeddedResource").SingleOrDefault(x => x.EvaluatedInclude.EndsWith("licenses.licx"));
-                    if (license != null)
-                    {
+                   if (license != null)
+                   {
                         project.RemoveItem(license);
                         project.Save();
-                    }
+                   }
                 }
                 
                 return true;
