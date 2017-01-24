@@ -52,6 +52,10 @@
   <UsingTask
      TaskName="Cms.Buildeploy.Tasks.SqlServerRestoreDatabase"
      AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+  
+  <UsingTask
+    TaskName="Cms.Buildeploy.Tasks.DeleteLicxFiles"
+     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
   <UsingTask
      TaskName="Cms.Buildeploy.Tasks.SqlServerDropDatabase"
@@ -498,6 +502,17 @@
 
   <Target Name="NuGetPush" Inputs="@(NugetPushUrl)" Outputs="NotUsedOutput" Condition="$(NugetLibApiKey)!=''">
     <Exec ContinueOnError="false" Command="$(NuGetExe) push bin\nuget\*.nupkg -Source %(NugetPushUrl.Identity) -ApiKey $(NugetLibApiKey)" />
+  </Target>
+
+  <Target Name="DeleteLicx">
+    <ItemGroup>
+      <ProjectFiles Include="$(SolutionDir)\Ewlw.ProjectCalc.Module\Ewlw.ProjectCalc.Module.csproj"/>
+      <ProjectFiles Include="$(SolutionDir)\Ewlw.ProjectCalc.Module.Win\Ewlw.ProjectCalc.Module.Win.csproj"/>
+      <ProjectFiles Include="$(SolutionDir)\Ewlw.ProjectCalc.Module.Web\Ewlw.ProjectCalc.Module.Web.csproj"/>
+      <ProjectFiles Include="$(SolutionDir)\Ewlw.ProjectCalc.Win\Ewlw.ProjectCalc.Win.csproj"/>
+      <ProjectFiles Include="$(SolutionDir)\Ewlw.ProjectCalc.Web\Ewlw.ProjectCalc.Web.csproj"/>
+    </ItemGroup>
+    <DeleteLicxFiles />
   </Target>
 
 
