@@ -21,11 +21,11 @@ namespace Cms.Buildeploy.Tasks
                    {
                         project.RemoveItem(license);
                         project.Save();
-                   }
 
-                    foreach (var licx in Directory.EnumerateFiles(Path.GetDirectoryName(projectFile.ItemSpec) ?? string.Empty, "*.licx", SearchOption.AllDirectories))
-                    {
-                        File.Delete(licx);
+                        foreach (var licx in Directory.EnumerateFiles(Path.GetDirectoryName(projectFile.ItemSpec) ?? string.Empty, "*.licx", SearchOption.AllDirectories))
+                        {
+                            File.Delete(licx);
+                        }
                     }
                 }
                 return true;
