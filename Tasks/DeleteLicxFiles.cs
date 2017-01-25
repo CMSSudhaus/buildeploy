@@ -15,20 +15,19 @@ namespace Cms.Buildeploy.Tasks
             {
                 foreach (ITaskItem projectFile in ProjectFiles)
                 {
-                    foreach (var licx in Directory.EnumerateFiles(Path.GetDirectoryName(projectFile.ItemSpec) ?? string.Empty, "*.licx", SearchOption.AllDirectories))
-                    {
-                        File.Delete(licx);
-                    }
-
-                   var project = new Project(File.ReadAllText(projectFile.ItemSpec));
-                   var license = project.GetItems("EmbeddedResource").SingleOrDefault(x => x.EvaluatedInclude.EndsWith("licenses.licx"));
+                   var project = new Project(projectFile.ItemSpec);
+                   var license = project.GetItemsByEvaluatedInclude(@"Properties\licenses.licx").SingleOrDefault();
                    if (license != null)
                    {
                         project.RemoveItem(license);
                         project.Save();
                    }
+
+                    foreach (var licx in Directory.EnumerateFiles(Path.GetDirectoryName(projectFile.ItemSpec) ?? string.Empty, "*.licx", SearchOption.AllDirectories))
+                    {
+                        File.Delete(licx);
+                    }
                 }
-                
                 return true;
             }
             catch (Exception)

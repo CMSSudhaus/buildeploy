@@ -23,8 +23,7 @@
   <UsingTask
         TaskName="Cms.Buildeploy.Tasks.ChangeVersion"
         AssemblyFile="$(BuildeployTasksAssemblyFile)" />
-
-
+  
   <UsingTask
     TaskName="Cms.Buildeploy.Tasks.MSTest"
     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
@@ -502,17 +501,5 @@
 
   <Target Name="NuGetPush" Inputs="@(NugetPushUrl)" Outputs="NotUsedOutput" Condition="$(NugetLibApiKey)!=''">
     <Exec ContinueOnError="false" Command="$(NuGetExe) push bin\nuget\*.nupkg -Source %(NugetPushUrl.Identity) -ApiKey $(NugetLibApiKey)" />
-  </Target>
-
-  <Target Name="DeleteLicx">
-    <Message Text="Delete Licx target is gonna be executed"></Message>
-    <ItemGroup>
-      <ProjectFiles Include="$(ProjectDir)\Ewlw.ProjectCalc.Module\Ewlw.ProjectCalc.Module.csproj"/>
-      <ProjectFiles Include="$(ProjectDir)\Ewlw.ProjectCalc.Module.Win\Ewlw.ProjectCalc.Module.Win.csproj"/>
-      <ProjectFiles Include="$(ProjectDir)\Ewlw.ProjectCalc.Module.Web\Ewlw.ProjectCalc.Module.Web.csproj"/>
-      <ProjectFiles Include="$(ProjectDir)\Ewlw.ProjectCalc.Win\Ewlw.ProjectCalc.Win.csproj"/>
-      <ProjectFiles Include="$(ProjectDir)\Ewlw.ProjectCalc.Web\Ewlw.ProjectCalc.Web.csproj"/>
-    </ItemGroup>
-    <DeleteLicxFiles />
   </Target>
 </Project>
