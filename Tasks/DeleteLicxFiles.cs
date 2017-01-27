@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using static System.Diagnostics.Debugger;
 
 namespace Cms.Buildeploy.Tasks
 {
@@ -13,23 +12,17 @@ namespace Cms.Buildeploy.Tasks
     {
         [Required]
         public ITaskItem[] ProjectFiles { get; set; }
-
-        public ITaskItem SolutionLocation { get; set; }
+        
 
         public override bool Execute()
         {
-            if (!string.IsNullOrEmpty(SolutionLocation.ItemSpec))
-            {
-                foreach (var projectLocation in GetProjectLocations(SolutionLocation.ItemSpec)) 
-                {
-                    HandleProjectFile(projectLocation);   
-                }
-                return true;
-            }
-            
             foreach (var projectFile in ProjectFiles)
             {
-                HandleProjectFile(projectFile.ItemSpec);
+               if (projectFile.ItemSpec.EndsWith(".csproj"))
+                     HandleProjectFile(projectFile.ItemSpec);
+               else if (projectFile.ItemSpec.EndsWith(".sln"))
+                     HandleSolution(projectFile.ItemSpec);
+               else throw new InvalidOperationException("Unknown file extension");
             }
             return true;
         }
@@ -69,7 +62,15 @@ namespace Cms.Buildeploy.Tasks
                     File.Delete(licx);
                 }
             }
-
         }
+
+        private void HandleSolution(string solutionLocation)
+        {
+            foreach (var projectLocation in GetProjectLocations(solutionLocation))
+            {
+                HandleProjectFile(projectLocation);
+            }
+        }
+
     }
 }
