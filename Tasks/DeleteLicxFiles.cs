@@ -20,7 +20,7 @@ namespace Cms.Buildeploy.Tasks
         {
             if (!string.IsNullOrEmpty(SolutionLocation.ItemSpec))
             {
-                foreach (var projectLocation in GetProjectLocations(SolutionLocation.ItemSpec))
+                foreach (var projectLocation in GetProjectLocations(SolutionLocation.ItemSpec)) 
                 {
                     HandleProjectFile(projectLocation);   
                 }
