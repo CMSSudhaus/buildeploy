@@ -23,8 +23,7 @@
   <UsingTask
         TaskName="Cms.Buildeploy.Tasks.ChangeVersion"
         AssemblyFile="$(BuildeployTasksAssemblyFile)" />
-
-
+  
   <UsingTask
     TaskName="Cms.Buildeploy.Tasks.MSTest"
     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
@@ -51,6 +50,10 @@
 
   <UsingTask
      TaskName="Cms.Buildeploy.Tasks.SqlServerRestoreDatabase"
+     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+  
+  <UsingTask
+     TaskName="Cms.Buildeploy.Tasks.DeleteLicxFiles"
      AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
   <UsingTask
@@ -499,6 +502,4 @@
   <Target Name="NuGetPush" Inputs="@(NugetPushUrl)" Outputs="NotUsedOutput" Condition="$(NugetLibApiKey)!=''">
     <Exec ContinueOnError="false" Command="$(NuGetExe) push bin\nuget\*.nupkg -Source %(NugetPushUrl.Identity) -ApiKey $(NugetLibApiKey)" />
   </Target>
-
-
 </Project>
