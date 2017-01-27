@@ -18,9 +18,9 @@ namespace Cms.Buildeploy.Tasks
         {
             foreach (var projectFile in ProjectFiles)
             {
-               if (projectFile.ItemSpec.EndsWith(".csproj"))
+               if (projectFile.ItemSpec.EndsWith(".csproj", StringComparison.InvariantCultureIgnoreCase))
                      HandleProjectFile(projectFile.ItemSpec);
-               else if (projectFile.ItemSpec.EndsWith(".sln"))
+               else if (projectFile.ItemSpec.EndsWith(".sln", StringComparison.InvariantCultureIgnoreCase))
                      HandleSolution(projectFile.ItemSpec);
                else throw new InvalidOperationException("Unknown file extension");
             }
