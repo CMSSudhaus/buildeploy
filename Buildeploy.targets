@@ -23,7 +23,7 @@
   <UsingTask
         TaskName="Cms.Buildeploy.Tasks.ChangeVersion"
         AssemblyFile="$(BuildeployTasksAssemblyFile)" />
-  
+
   <UsingTask
     TaskName="Cms.Buildeploy.Tasks.MSTest"
     AssemblyFile="$(BuildeployTasksAssemblyFile)" />
@@ -51,7 +51,7 @@
   <UsingTask
      TaskName="Cms.Buildeploy.Tasks.SqlServerRestoreDatabase"
      AssemblyFile="$(BuildeployTasksAssemblyFile)" />
-  
+
   <UsingTask
      TaskName="Cms.Buildeploy.Tasks.DeleteLicxFiles"
      AssemblyFile="$(BuildeployTasksAssemblyFile)" />
@@ -68,6 +68,11 @@
 
   <Target Name="BeforeBuild">
   </Target>
+
+  <Target Name="DeleteLicxFiles">
+    <DeleteLicxFiles ProjectFiles="@(ProjectToBuild -> '%(fullpath)')"/>
+  </Target>
+  
   <Target Name="Build"
         DependsOnTargets="Configurations;NugetRestore"
         Inputs="@(Configuration)"
@@ -363,6 +368,7 @@
     </PropertyGroup>
 
     <RemoveDir Directories="$(TempRedistRoot)"/>
+    <CallTarget Targets="DeleteLicxFiles" Condition="$(SkipBuild) != true"/>
     <CallTarget Targets="Build" Condition="$(SkipBuild) != true"/>
     <CallTarget Targets="EasyTests" Condition="$(EasyTestConfig)!=''"/>
     <MakeDir Directories="$(TempRedistRoot)\Client"/>
