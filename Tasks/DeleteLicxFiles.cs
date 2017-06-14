@@ -51,16 +51,23 @@ namespace Cms.Buildeploy.Tasks
         private void HandleProjectFile(string projectFileLocation)
         {
             var project = new Project(projectFileLocation);
-            var license = project.GetItemsByEvaluatedInclude(@"Properties\licenses.licx").SingleOrDefault();
-            if (license != null)
+            try
             {
-                project.RemoveItem(license);
-                project.Save();
-
-                foreach (var licx in Directory.EnumerateFiles(Path.GetDirectoryName(projectFileLocation) ?? string.Empty, "*.licx", SearchOption.AllDirectories))
+                var license = project.GetItemsByEvaluatedInclude(@"Properties\licenses.licx").SingleOrDefault();
+                if (license != null)
                 {
-                    File.Delete(licx);
+                    project.RemoveItem(license);
+                    project.Save();
+
+                    foreach (var licx in Directory.EnumerateFiles(Path.GetDirectoryName(projectFileLocation) ?? string.Empty, "*.licx", SearchOption.AllDirectories))
+                    {
+                        File.Delete(licx);
+                    }
                 }
+            }
+            finally
+            {
+                ProjectCollection.GlobalProjectCollection.UnloadProject(project);
             }
         }
 

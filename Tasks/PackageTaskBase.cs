@@ -478,6 +478,11 @@ namespace Cms.Buildeploy.Tasks
 
         public override bool Execute()
         {
+            if (Certificate != null && !File.Exists(Certificate.ItemSpec))
+            {
+                Log.LogError("Cannot find certificate file '{0}'", Certificate.ItemSpec);
+                return false;
+            }
             //If no ClickOnce files, compressing the website only.
             if (Files == null || Files.Length == 0 || SkipClickOnce)
             {

@@ -296,6 +296,7 @@
   </Target>
   <Target Name="BeforeRedistBinaries"/>
   <Target Name="AfterRedistBinaries"/>
+  <Target Name="AfterBuild"/>
 
 
   <PropertyGroup>
@@ -370,6 +371,7 @@
     <RemoveDir Directories="$(TempRedistRoot)"/>
     <CallTarget Targets="DeleteLicxFiles" Condition="$(SkipBuild) != true"/>
     <CallTarget Targets="Build" Condition="$(SkipBuild) != true"/>
+    <CallTarget Targets="AfterBuild" Condition="$(SkipBuild) != true"/>
     <CallTarget Targets="EasyTests" Condition="$(EasyTestConfig)!=''"/>
     <MakeDir Directories="$(TempRedistRoot)\Client"/>
 
@@ -380,6 +382,7 @@
       WorkingDirectory="bin\$(RedistConfiguration)"
       Category="$(MSTestCategory)"/>
 
+    <CallTarget Targets="RunUnitTests"/>
     <CallTarget Targets="RunMSTestMultipleProcesses" Condition="$(MSTestMultiProcess)==true"/>
     <ResolveRedistAssemblies Files="@(ClientRedistFile)" LookUpPath="$(CompileOutput)">
       <Output TaskParameter="Result" ItemName="RedistPath"/>
@@ -466,6 +469,7 @@
 
     <Copy SourceFiles="@(TempLocalizationFile)" DestinationFolder="$(CompiledSite)\bin\%(RecursiveDir)"/>
     <CallTarget Targets="AfterWebsiteCompiled"/>
+    <CallTarget Targets="RunUnitTests"/>
 
     <CheckReferences Path="$(WebSiteSource)\bin" MessageInfo="Website" Excludes="@(CheckReferenceExclude)"/>
     <ItemGroup>
