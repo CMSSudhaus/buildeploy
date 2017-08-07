@@ -433,6 +433,7 @@
              StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="RedistBinaries;PrecompileWeb;OctoPackage;OctoDeploy;ClickOnce;"/>
   </Target>
   <Target Name="AfterWebsiteCompiled" />
+  <Target Name="RunUnitTests" />
   <Target Name="PrecompileWeb"  Condition="$(WebsiteSource)!=''">
 
     <Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
