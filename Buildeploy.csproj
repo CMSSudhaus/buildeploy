@@ -35,7 +35,7 @@
     <CodeAnalysisRuleSet>Buildeploy.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ICSharpCode.SharpZipLib">
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="LibGit2Sharp, Version=0.24.1.0, Culture=neutral, PublicKeyToken=7cbde695407f0333, processorArchitecture=MSIL">
@@ -59,7 +59,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuildNameParser.cs" />
-    <Compile Include="ChangeVersion.cs" />
+    <Compile Include="ChangeVersionParser.cs" />
+    <Compile Include="ConsoleLogWriter.cs" />
+    <Compile Include="ConstantVersionChanger.cs" />
+    <Compile Include="DummyVersionChanger.cs" />
+    <Compile Include="ILogWriter.cs" />
+    <Compile Include="IncrementVersionChanger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReferenceCheck\AssemblyCollection.cs" />
     <Compile Include="ReferenceCheck\AssemblyCollectionBase.cs" />
@@ -79,10 +84,12 @@
     <Compile Include="Tasks\NugetPackage.cs" />
     <Compile Include="Tasks\PackageTaskBase.cs" />
     <Compile Include="Tasks\ResolveRedistAssemblies.cs" />
+    <Compile Include="Tasks\SetVersionFromGitTag.cs" />
     <Compile Include="Tasks\SqlServerDropDatabase.cs" />
     <Compile Include="Tasks\SqlServerRestoreDatabase.cs" />
     <Compile Include="Tasks\Zip.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="VersionChangerBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Buildeploy.ruleset" />
@@ -94,6 +101,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FrameworkAssemblies.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="packages\RefactoringEssentials.1.1.0\tools\analyzers\RefactoringEssentials.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

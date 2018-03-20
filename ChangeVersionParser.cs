@@ -162,7 +162,7 @@ namespace Cms.Buildeploy
                 {
                     File.Delete(newFile);
                 }
-                catch(IOException) { }
+                catch (IOException) { }
 
                 throw new InvalidOperationException("Cannot update file", ex);
             }
@@ -190,7 +190,8 @@ namespace Cms.Buildeploy
                 newVersion = string.Join(".", parts);
             }
             else
-                newVersion = this.ConstantVersion;
+                newVersion = ConstantVersion;
+
             return newVersion;
         }
     }

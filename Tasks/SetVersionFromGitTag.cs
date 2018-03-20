@@ -20,7 +20,7 @@ namespace Cms.Buildeploy.Tasks
 
         string BuildTagPrefix { get; set; }
 
-        IEnumerable<string> TagNames { get; set; }
+        IEnumerable<string> TagNames { get; }
 
     }
     public class SetVersionFromGitTag : Task, IGitVersionInfo
@@ -39,6 +39,9 @@ namespace Cms.Buildeploy.Tasks
 
         [Required]
         public string HotfixVersionPattern { get; set; }
+
+        [Required]
+        public string BuildTagPrefix { get; set; }
 
         [Output]
         public string NewVersion { get; set; }
@@ -77,6 +80,14 @@ namespace Cms.Buildeploy.Tasks
 
             if (currentVersion == null)
                 currentVersion = GetMasterVersion();
+
+
+            ChangeVersionParser parser = new ChangeVersionParser(currentVersion.ToString(), null);
+        }
+
+        private bool IsInHotfixBranch()
+        {
+            throw new NotImplementedException();
         }
 
         private Version GetMasterVersion()
