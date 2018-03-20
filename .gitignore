@@ -6,3 +6,4 @@ Build/Temp
 *.cache
 /*.bak
 /packages
+.vs

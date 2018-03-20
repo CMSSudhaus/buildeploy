@@ -270,7 +270,7 @@
     <PropertyGroup>
       <NoCacheOption Condition="$(NugetRestoreNoCache)==true">-NoCache</NoCacheOption>
     </PropertyGroup>
-    <Exec Command="$(NugetExe) restore %(PackagesConfig.FullPath) -Source $(NugetPackagesSource) -PackagesDirectory $(MSBuildProjectDirectory)\packages $(NoCacheOption)"
+    <Exec Command="$(NugetExe) restore %(PackagesConfig.FullPath) -Recursive -Source $(NugetPackagesSource) -PackagesDirectory $(MSBuildProjectDirectory)\packages $(NoCacheOption)"
           Condition="Exists(%(PackagesConfig.FullPath))"/>
   </Target>
 

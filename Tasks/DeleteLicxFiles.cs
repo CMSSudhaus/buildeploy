@@ -18,11 +18,13 @@ namespace Cms.Buildeploy.Tasks
         {
             foreach (var projectFile in ProjectFiles)
             {
-               if (projectFile.ItemSpec.EndsWith(".csproj", StringComparison.InvariantCultureIgnoreCase))
-                     HandleProjectFile(projectFile.ItemSpec);
-               else if (projectFile.ItemSpec.EndsWith(".sln", StringComparison.InvariantCultureIgnoreCase))
-                     HandleSolution(projectFile.ItemSpec);
-               else throw new InvalidOperationException("Unknown file extension");
+                string fileName = projectFile.ItemSpec;
+                if (fileName.EndsWith(".csproj", StringComparison.InvariantCultureIgnoreCase))
+                    HandleProjectFile(fileName);
+                else if (fileName.EndsWith(".sln", StringComparison.InvariantCultureIgnoreCase))
+                    HandleSolution(fileName);
+                else
+                    Log.LogWarning("File extension not supported: {0}", fileName);
             }
             return true;
         }
