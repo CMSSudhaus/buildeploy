@@ -8,6 +8,11 @@ using System.Text;
 namespace Cms.Buildeploy.Tasks
 {
 
+    public interface IGitTagProvider : IDisposable
+    {
+        IEnumerable<string> GetTags();
+    }
+
     public interface IGitVersionInfo
     {
         string MasterBranchName { get; set; }
@@ -20,7 +25,7 @@ namespace Cms.Buildeploy.Tasks
 
         string BuildTagPrefix { get; set; }
 
-        IEnumerable<string> TagNames { get; }
+        IGitTagProvider CreateTagProvider();
 
     }
     public class SetVersionFromGitTag : Task, IGitVersionInfo
@@ -46,8 +51,8 @@ namespace Cms.Buildeploy.Tasks
         [Output]
         public string NewVersion { get; set; }
 
+        public IGitTagProvider CreateTagProvider() => throw new NotImplementedException();
 
-        IEnumerable<string> IGitVersionInfo.TagNames => throw new NotImplementedException();
         public override bool Execute()
         {
 
