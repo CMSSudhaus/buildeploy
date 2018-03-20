@@ -11,18 +11,17 @@ namespace Cms.Buildeploy
 
         private VersionChangerBase[] versionChangers;
         private string constantVersion = string.Empty;
-        private string version;
         private ILogWriter logWriter;
 
-        public ChangeVersionParser(string version, ILogWriter logWriter)
+        public ChangeVersionParser(string versionChangePattern, ILogWriter logWriter)
         {
-            if (version == null) throw new ArgumentNullException(nameof(version));
+            if (versionChangePattern == null) throw new ArgumentNullException(nameof(versionChangePattern));
             if (logWriter == null) throw new ArgumentNullException(nameof(logWriter));
 
             this.logWriter = logWriter;
 
-            this.version = version;
-            ParseVersion(version);
+            this.VersionChangePattern = versionChangePattern;
+            ParseVersion(versionChangePattern);
         }
 
         public bool ShouldCreateBackup { get; set; }
@@ -33,6 +32,8 @@ namespace Cms.Buildeploy
         {
             get { return versionChangers; }
         }
+
+        public string VersionChangePattern { get; }
 
         private VersionChangerBase CreateVersionChanger(string newVersion)
         {

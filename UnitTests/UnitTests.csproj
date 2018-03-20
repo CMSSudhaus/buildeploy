@@ -75,6 +75,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="BuildParserTests.cs" />
+    <Compile Include="ConsoleLogWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

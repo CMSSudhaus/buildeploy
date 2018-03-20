@@ -60,7 +60,6 @@
   <ItemGroup>
     <Compile Include="BuildNameParser.cs" />
     <Compile Include="ChangeVersionParser.cs" />
-    <Compile Include="ConsoleLogWriter.cs" />
     <Compile Include="ConstantVersionChanger.cs" />
     <Compile Include="DummyVersionChanger.cs" />
     <Compile Include="ILogWriter.cs" />
