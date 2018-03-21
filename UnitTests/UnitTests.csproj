@@ -87,9 +87,9 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="BuildParserTests.cs" />
     <Compile Include="ConsoleLogWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VersioningTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Buildeploy.csproj">

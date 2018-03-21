@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Cms.Buildeploy.Tasks
 {
-    public sealed class ChangeVersion : Task, ILogWriter
+    public sealed class ChangeVersion : LogWriterTaskBase
     {
 
         public override bool Execute()
@@ -36,13 +35,5 @@ namespace Cms.Buildeploy.Tasks
         [Output]
         public string NewVersion { get; private set; }
 
-        #region ILogWriter Members
-
-        void ILogWriter.WriteLine(string format, params object[] args)
-        {
-            Log.LogMessage(format, args);
-        }
-
-        #endregion
     }
 }

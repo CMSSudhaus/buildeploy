@@ -2,6 +2,7 @@
 using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -11,9 +12,11 @@ namespace Cms.Buildeploy.Tasks
     public interface IGitTagProvider : IDisposable
     {
         IEnumerable<string> GetTags();
+
+        string CurrentBranchName { get; }
     }
 
-    public interface IGitVersionTask
+    public interface IGitVersionTask : ILogWriter
     {
         string MasterBranchName { get; set; }
 
@@ -28,7 +31,7 @@ namespace Cms.Buildeploy.Tasks
         IGitTagProvider CreateTagProvider();
 
     }
-    public class SetVersionFromGitTag : Task, IGitVersionTask
+    public class SetVersionFromGitTag : LogWriterTaskBase, IGitVersionTask
     {
         [Required]
         public ITaskItem[] Files { get; set; }
@@ -60,47 +63,103 @@ namespace Cms.Buildeploy.Tasks
     }
 
 
-    public class GitVersionWorker
+    public class GitVersionWorker : IDisposable
     {
-        public GitVersionWorker(IGitVersionTask info)
+        public GitVersionWorker(IGitVersionTask task)
         {
-            VersionInfo = info;
+            Task = task;
+            GitTagProvider = task.CreateTagProvider();
         }
 
-        private IGitVersionTask VersionInfo { get; }
 
-        public Version NewVersion { get; }
+        private IGitTagProvider GitTagProvider { get; }
+        private IGitVersionTask Task { get; }
 
-        public string TagName { get; }
+        public Version NewVersion { get; private set; }
+
+        public string TagName { get; private set; }
 
         public void Execute()
         {
             Version currentVersion = null;
+            string versionChangePattern = null;
             if (IsInHotfixBranch())
             {
                 currentVersion = GetHotFixVersion();
+                versionChangePattern = Task.HotfixVersionPattern;
             }
 
             if (currentVersion == null)
+            {
                 currentVersion = GetMasterVersion();
+                versionChangePattern = Task.MasterVersionPattern;
+            }
 
-
-            ChangeVersionParser parser = new ChangeVersionParser(currentVersion.ToString(), null);
+            ChangeVersionParser parser = new ChangeVersionParser(versionChangePattern, Task);
+            NewVersion = new Version(parser.ChangeVersion(currentVersion.ToString()));
+            TagName = BuildVersionTag(GitTagProvider.CurrentBranchName, NewVersion.ToString());
         }
 
-        private bool IsInHotfixBranch()
+        private string BuildVersionTag(string branchName, string version)
         {
-            throw new NotImplementedException();
+            return string.Format(CultureInfo.InvariantCulture, "{0}{1}-{2}", Task.BuildTagPrefix, branchName, version);
         }
 
-        private Version GetMasterVersion()
+
+        private Version GetVersionFromTag(string tag, string prefix)
         {
-            throw new NotImplementedException();
+            if (tag != null && tag.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                if (Version.TryParse(tag.Substring(prefix.Length), out var version))
+                    return version;
+            }
+
+            return null;
         }
+        private Version FindLastVersion(string branchName)
+        {
+            var prefix = BuildVersionTag(branchName, string.Empty);
+            return GitTagProvider.GetTags().Select(t => GetVersionFromTag(t, prefix)).FirstOrDefault(v => v != null) ?? CreateDefaultVersion();
+        }
+
+        private static Version CreateDefaultVersion() => new Version(0, 0, 0, 0);
+
+        private bool IsInHotfixBranch() =>
+            GitTagProvider.CurrentBranchName?.StartsWith(Task.HotfixBranchPrefix, StringComparison.Ordinal) ?? false;
+
+        private Version GetMasterVersion() => FindLastVersion(Task.MasterBranchName);
 
         private Version GetHotFixVersion()
         {
-            throw new NotImplementedException();
+            if (IsInHotfixBranch())
+                return FindLastVersion(GitTagProvider.CurrentBranchName);
+
+            return null;
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    GitTagProvider.Dispose();
+                }
+
+
+                disposedValue = true;
+            }
+        }
+
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+        #endregion
     }
 }
