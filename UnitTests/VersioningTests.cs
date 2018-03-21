@@ -29,6 +29,14 @@ namespace UnitTests
         [Fact]
         public void GitTagVersionWithNoTagsTest()
         {
+            GitVersionWorker worker = new GitVersionWorker(CreateVersionTask("master", new string[0]));
+            worker.Execute();
+            Assert.Equal(new Version("0.0.1000.0"), worker.NewVersion);
+            Assert.Equal("build-master-0.0.1000.0", worker.TagName);
+        }
+
+        private static IGitVersionTask CreateVersionTask(string branchName, string[] tags)
+        {
             var taskMock = new Mock<IGitVersionTask>();
             taskMock.Setup(t => t.HotfixBranchPrefix).Returns("hotfix-");
             taskMock.Setup(t => t.HotfixVersionPattern).Returns("*.*.+1.*");
@@ -37,16 +45,11 @@ namespace UnitTests
             taskMock.Setup(t => t.BuildTagPrefix).Returns("build-");
 
             var tagProviderMock = new Mock<IGitTagProvider>();
-            tagProviderMock.Setup(tp => tp.GetTags()).Returns(new string[0]);
-            tagProviderMock.Setup(tp => tp.CurrentBranchName).Returns("master");
+            tagProviderMock.Setup(tp => tp.GetTags()).Returns(tags);
+            tagProviderMock.Setup(tp => tp.CurrentBranchName).Returns(branchName);
             taskMock.Setup(t => t.CreateTagProvider()).Returns(tagProviderMock.Object);
-
-            GitVersionWorker worker = new GitVersionWorker(taskMock.Object);
-            worker.Execute();
-            Assert.Equal(new Version("0.0.1000.0"), worker.NewVersion);
-            Assert.Equal("build-master-0.0.1000.0", worker.TagName);
+            return taskMock.Object;
         }
-
     }
 
 
