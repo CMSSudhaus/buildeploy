@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Cms.Buildeploy
 {
@@ -155,26 +156,22 @@ namespace Cms.Buildeploy
 
         public string ProcessAssemblyInfo(TextReader reader, TextWriter writer)
         {
-            const string versionString = "[assembly: AssemblyVersion(\"";
 
-            string result = null;
-            while (reader.Peek() >= 0)
+            Regex regex = new Regex("(\\[assembly:.*AssemblyVersion\\(\")(.*)(\"\\)\\])");
+            string allText = reader.ReadToEnd();
+            var match = regex.Match(allText);
+            if (match != null && match.Success)
             {
-                string line = reader.ReadLine();
-                if (line.StartsWith(versionString, StringComparison.Ordinal) && result == null)
-                {
-                    int versionEnd = line.IndexOf("\"", versionString.Length, StringComparison.Ordinal);
-                    if (versionEnd >= 0)
-                    {
-                        string version = line.Substring(versionString.Length, versionEnd - versionString.Length);
-                        result = ChangeVersion(version);
-                        line = string.Format("{0}{1}\")]", versionString, result);
-                    }
-                }
-                writer.WriteLine(line);
+                var changedVersion = ChangeVersion(match.Groups[1].Value);
+                writer.Write(regex.Replace(allText, "${1}" + changedVersion + "${3}"));
+                return changedVersion;
+            }
+            else
+            {
+                writer.Write(allText);
             }
 
-            return result;
+            return null;
         }
 
         public string ChangeVersion(string version)
