@@ -9,7 +9,7 @@ namespace Cms.Buildeploy.Tasks
         private readonly Repository repository;
         public GitTagProvider(string path)
         {
-            repository = new Repository(path);
+            repository = new Repository(Repository.Discover(path));
         }
 
         public string CurrentBranchName => repository.Head.FriendlyName;

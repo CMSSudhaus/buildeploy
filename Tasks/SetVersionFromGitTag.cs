@@ -22,8 +22,7 @@ namespace Cms.Buildeploy.Tasks
         [Required]
         public string HotfixVersionPattern { get; set; }
 
-        [Required]
-        public string BuildTagPrefix { get; set; }
+        public string BuildTagPrefix { get; set; } = "build-";
 
         [Output]
         public string NewVersion { get; set; }
@@ -40,6 +39,7 @@ namespace Cms.Buildeploy.Tasks
                 worker.Execute();
                 NewVersion = worker.NewVersion.ToString();
                 BuildTag = worker.TagName;
+                
                 return true;
             }
         }

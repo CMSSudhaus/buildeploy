@@ -97,42 +97,18 @@ namespace Cms.Buildeploy
             WriteLine("Processing File {0}", fileName);
             string newFile = Path.Combine(Path.GetDirectoryName(fileName), "AssemblyInfo.new");
 
-            bool versionFound = false;
-            string newVersion = string.Empty;
+            string newVersion = null;
 
             using (StreamReader reader = new StreamReader(fileName, Encoding.Default))
             {
 
                 using (StreamWriter writer = new StreamWriter(newFile, false, Encoding.Default))
                 {
-
-                    const string versionString = "[assembly: AssemblyVersion(\"";
-
-
-                    while (!reader.EndOfStream)
-                    {
-                        string line = reader.ReadLine();
-                        if (line.StartsWith(versionString, StringComparison.Ordinal) && !versionFound)
-                        {
-                            int versionEnd = line.IndexOf("\"", versionString.Length, StringComparison.Ordinal);
-                            if (versionEnd >= 0)
-                            {
-                                string version = line.Substring(versionString.Length, versionEnd - versionString.Length);
-                                newVersion = ChangeVersion(version);
-
-                                line = string.Format("{0}{1}\")]", versionString, newVersion);
-
-
-                                versionFound = true;
-                            }
-                        }
-                        writer.WriteLine(line);
-                    }
-
+                    newVersion = ProcessAssemblyInfo(reader, writer);
                 }
             }
 
-            if (!versionFound)
+            if (newVersion != null)
             {
                 File.Delete(newFile);
                 throw new InvalidOperationException("Assembly Version Attribute not found.");
@@ -175,6 +151,30 @@ namespace Cms.Buildeploy
             }
 
             return null;
+        }
+
+        public string ProcessAssemblyInfo(TextReader reader, TextWriter writer)
+        {
+            const string versionString = "[assembly: AssemblyVersion(\"";
+
+            string result = null;
+            while (reader.Peek() >= 0)
+            {
+                string line = reader.ReadLine();
+                if (line.StartsWith(versionString, StringComparison.Ordinal) && result == null)
+                {
+                    int versionEnd = line.IndexOf("\"", versionString.Length, StringComparison.Ordinal);
+                    if (versionEnd >= 0)
+                    {
+                        string version = line.Substring(versionString.Length, versionEnd - versionString.Length);
+                        result = ChangeVersion(version);
+                        line = string.Format("{0}{1}\")]", versionString, result);
+                    }
+                }
+                writer.WriteLine(line);
+            }
+
+            return result;
         }
 
         public string ChangeVersion(string version)

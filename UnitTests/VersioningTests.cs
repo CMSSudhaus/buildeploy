@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Cms.Buildeploy;
 using Cms.Buildeploy.Tasks;
 using Moq;
@@ -77,6 +78,27 @@ namespace UnitTests
             taskMock.Setup(t => t.CreateTagProvider()).Returns(tagProviderMock.Object);
             return taskMock.Object;
         }
+
+        [Fact]
+        public void ChangeVersionWithUsingTest()
+        {
+            string versionCode = "using System.Reflection;\r\n[assembly: AssemblyVersion(\"1.0.0.0\")]\r\n";
+            ChangeVersionParser parser = new ChangeVersionParser("2.0.0.0", new Mock<ILogWriter>().Object);
+            var sw = new StringWriter();
+            parser.ProcessAssemblyInfo(new StringReader(versionCode), sw);
+            Assert.Equal("using System.Reflection;\r\n[assembly: AssemblyVersion(\"2.0.0.0\")]\r\n", sw.ToString());
+        }
+
+        [Fact]
+        public void ChangeVersionExplicitNamespaceTest()
+        {
+            string versionCode = "[assembly: System.Reflection.AssemblyVersion(\"1.0.0.0\")]\r\n";
+            ChangeVersionParser parser = new ChangeVersionParser("2.0.0.0", new Mock<ILogWriter>().Object);
+            var sw = new StringWriter();
+            parser.ProcessAssemblyInfo(new StringReader(versionCode), sw);
+            Assert.Equal("[assembly: System.Reflection.AssemblyVersion(\"2.0.0.0\")]\r\n", sw.ToString());
+        }
+
     }
 
 
