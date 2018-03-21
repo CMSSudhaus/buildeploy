@@ -109,7 +109,7 @@ namespace Cms.Buildeploy
                 }
             }
 
-            if (newVersion != null)
+            if (newVersion == null)
             {
                 File.Delete(newFile);
                 throw new InvalidOperationException("Assembly Version Attribute not found.");

@@ -39,7 +39,14 @@ namespace Cms.Buildeploy.Tasks
                 worker.Execute();
                 NewVersion = worker.NewVersion.ToString();
                 BuildTag = worker.TagName;
-                
+                ChangeVersionParser parser = new ChangeVersionParser(NewVersion, this);
+                foreach (var fileItem in Files)
+                {
+                    if (!File.Exists(fileItem.ItemSpec))
+                        File.WriteAllText(fileItem.ItemSpec, "[assembly: System.Reflection.AssemblyVersion(\"0.0.0.0\")]\r\n");
+                    parser.ProcessAssemblyInfo(fileItem.ItemSpec);
+                }
+
                 return true;
             }
         }
