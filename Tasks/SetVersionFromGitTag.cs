@@ -2,7 +2,7 @@
 using Microsoft.Build.Utilities;
 using System;
 using System.Globalization;
-using System.Linq;
+using System.IO;
 using System.Text;
 
 namespace Cms.Buildeploy.Tasks
@@ -28,13 +28,21 @@ namespace Cms.Buildeploy.Tasks
         [Output]
         public string NewVersion { get; set; }
 
-        public IGitTagProvider CreateTagProvider() => throw new NotImplementedException();
+        [Output]
+        public string BuildTag { get; set; }
+
+        public IGitTagProvider CreateTagProvider() => new GitTagProvider(Path.GetDirectoryName(BuildEngine.ProjectFileOfTaskNode));
 
         public override bool Execute()
         {
-
-
-            return true;
+            using (GitVersionWorker worker = new GitVersionWorker(this))
+            {
+                worker.Execute();
+                NewVersion = worker.NewVersion.ToString();
+                BuildTag = worker.TagName;
+                return true;
+            }
         }
     }
 }
+
