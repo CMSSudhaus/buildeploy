@@ -78,6 +78,9 @@
     <Compile Include="Tasks\EasyTest.cs" />
     <Compile Include="Tasks\GenerateVersionPattern.cs" />
     <Compile Include="Tasks\GetGitBranchName.cs" />
+    <Compile Include="Tasks\GitVersionWorker.cs" />
+    <Compile Include="Tasks\IGitTagProvider.cs" />
+    <Compile Include="Tasks\IGitVersionTask.cs" />
     <Compile Include="Tasks\LogWriterTaskBase.cs" />
     <Compile Include="Tasks\MSTest.cs" />
     <Compile Include="Tasks\NugetArchive.cs" />
