@@ -13,7 +13,7 @@ namespace Cms.Buildeploy.Tasks
         IEnumerable<string> GetTags();
     }
 
-    public interface IGitVersionInfo
+    public interface IGitVersionTask
     {
         string MasterBranchName { get; set; }
 
@@ -28,16 +28,14 @@ namespace Cms.Buildeploy.Tasks
         IGitTagProvider CreateTagProvider();
 
     }
-    public class SetVersionFromGitTag : Task, IGitVersionInfo
+    public class SetVersionFromGitTag : Task, IGitVersionTask
     {
         [Required]
         public ITaskItem[] Files { get; set; }
 
-        [Required]
-        public string MasterBranchName { get; set; }
+        public string MasterBranchName { get; set; } = "master";
 
-        [Required]
-        public string HotfixBranchPrefix { get; set; }
+        public string HotfixBranchPrefix { get; set; } = "hotfix-";
 
         [Required]
         public string MasterVersionPattern { get; set; }
@@ -64,12 +62,12 @@ namespace Cms.Buildeploy.Tasks
 
     public class GitVersionWorker
     {
-        public GitVersionWorker(IGitVersionInfo info)
+        public GitVersionWorker(IGitVersionTask info)
         {
             VersionInfo = info;
         }
 
-        private IGitVersionInfo VersionInfo { get; }
+        private IGitVersionTask VersionInfo { get; }
 
         public Version NewVersion { get; }
 
