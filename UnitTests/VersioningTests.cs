@@ -35,6 +35,33 @@ namespace UnitTests
             Assert.Equal("build-master-0.0.1000.0", worker.TagName);
         }
 
+        [Fact]
+        public void GitTagVersionMasterTest()
+        {
+            GitVersionWorker worker = new GitVersionWorker(CreateVersionTask("master", new[] { "aaaa", "build-master-2.0.0.0" }));
+            worker.Execute();
+            Assert.Equal(new Version("2.0.1000.0"), worker.NewVersion);
+            Assert.Equal("build-master-2.0.1000.0", worker.TagName);
+        }
+
+        [Fact]
+        public void GitTagVersionFirstHotFixTest()
+        {
+            GitVersionWorker worker = new GitVersionWorker(CreateVersionTask("hotfix-TTT-1", new[] { "aaaa", "build-master-2.0.1000.0" }));
+            worker.Execute();
+            Assert.Equal(new Version("2.0.1001.0"), worker.NewVersion);
+            Assert.Equal("build-hotfix-TTT-1-2.0.1001.0", worker.TagName);
+        }
+
+        [Fact]
+        public void GitTagVersionSecondHotFixTest()
+        {
+            GitVersionWorker worker = new GitVersionWorker(CreateVersionTask("hotfix-TTT-1", new[] { "aaaa", "build-master-2.0.1000.0" , "build-hotfix-TTT-1-2.0.1001.0"}));
+            worker.Execute();
+            Assert.Equal(new Version("2.0.1002.0"), worker.NewVersion);
+            Assert.Equal("build-hotfix-TTT-1-2.0.1002.0", worker.TagName);
+        }
+
         private static IGitVersionTask CreateVersionTask(string branchName, string[] tags)
         {
             var taskMock = new Mock<IGitVersionTask>();
