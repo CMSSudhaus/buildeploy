@@ -60,6 +60,11 @@
      TaskName="Cms.Buildeploy.Tasks.SqlServerDropDatabase"
      AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
+  <UsingTask
+        TaskName="Cms.Buildeploy.Tasks.SetVersionFromGitTag"
+        AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+
+
   <Target Name="Configurations">
     <CreateItem Include="$(TargetConfigurations)">
       <Output TaskParameter="Include" ItemName="Configuration" />
@@ -72,7 +77,7 @@
   <Target Name="DeleteLicxFiles">
     <DeleteLicxFiles ProjectFiles="@(ProjectToBuild -> '%(fullpath)')"/>
   </Target>
-  
+
   <Target Name="Build"
         DependsOnTargets="Configurations;NugetRestore"
         Inputs="@(Configuration)"
@@ -346,17 +351,28 @@
       <Output TaskParameter="Pattern" PropertyName="BuildVersionPattern"/>
     </GenerateVersionPattern>
 
-    <ChangeVersion Files="@(VersionFile)" Version="$(BuildVersionPattern)" Condition="$(BuildVersionPattern)!=''">
+    <ChangeVersion Files="@(VersionFile)" Version="$(BuildVersionPattern)" Condition="$(UseVersionFromGitTag)!=true and $(BuildVersionPattern)!=''">
       <Output TaskParameter="NewVersion" PropertyName="Version"/>
     </ChangeVersion>
 
-    <ChangeVersion Files="@(VersionFile)" Version="$(VersionPattern)" Condition="$(BuildVersionPattern)==''">
+    <ChangeVersion Files="@(VersionFile)" Version="$(VersionPattern)" Condition="$(UseVersionFromGitTag)!=true and $(BuildVersionPattern)==''">
       <Output TaskParameter="NewVersion" PropertyName="Version"/>
     </ChangeVersion>
 
+    <SetVersionFromGitTag
+      Files="@(VersionFile)"
+      MasterVersionPattern="$(MasterVersionPattern)"
+      HotFixVersionPattern="$(HotfixVersionPattern)">
+
+      <Output TaskParameter="NewVersion" PropertyName="Version"/>
+      <Output TaskParameter="BuildTag" PropertyName="BuildTagName"
+      Condition="$(UseVersionFromGitTag)==true"/>
+    </SetVersionFromGitTag>
     <GetGitBranchName>
       <Output TaskParameter ="BranchName" PropertyName="BranchName"/>
     </GetGitBranchName>
+
+    <Message Text="##teamcity[setParameter name='buildtagname' value='$(BuildTagName)']"  Importance="high"/>
 
 
 
