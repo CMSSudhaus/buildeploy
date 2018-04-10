@@ -383,6 +383,7 @@
       <VersionRedistRoot Condition="$(DefaultVersionRedistRoot)!=''">$(DefaultVersionRedistRoot)</VersionRedistRoot>
       <VersionRedistRoot Condition="$(DefaultVersionRedistRoot)==''">$(RedistRoot)\$(BuildDefinition)\$(SemVersion)</VersionRedistRoot>
     </PropertyGroup>
+    <Message Text="##teamcity[setParameter name='VersionRedistRoot' value='$(VersionRedistRoot)']"  Importance="high"/>
 
     <RemoveDir Directories="$(TempRedistRoot)"/>
     <CallTarget Targets="DeleteLicxFiles" Condition="$(SkipBuild) != true"/>
