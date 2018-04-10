@@ -99,6 +99,17 @@ namespace UnitTests
             Assert.Equal("[assembly: System.Reflection.AssemblyVersion(\"2.0.0.0\")]\r\n", sw.ToString());
         }
 
+
+        [Fact]
+        public void ChangeSmallerVersionTest()
+        {
+            string versionCode = "using System.Reflection;\r\n[assembly: AssemblyVersion(\"2.0.0.0\")]\r\n";
+            ChangeVersionParser parser = new ChangeVersionParser("1.0.0.0", new Mock<ILogWriter>().Object);
+            var sw = new StringWriter();
+            parser.ProcessAssemblyInfo(new StringReader(versionCode), sw);
+            Assert.Equal("using System.Reflection;\r\n[assembly: AssemblyVersion(\"2.0.0.0\")]\r\n", sw.ToString());
+        }
+
     }
 
 

@@ -34,6 +34,9 @@ namespace Cms.Buildeploy
             get { return versionChangers; }
         }
 
+
+        public bool AllowOlderVersions { get; set; }
+
         public string VersionChangePattern { get; }
 
         private VersionChangerBase CreateVersionChanger(string newVersion)
@@ -82,7 +85,7 @@ namespace Cms.Buildeploy
                 constantVersion = constantVersion.Substring(0, constantVersion.Length - 1);
             }
             else
-                constantVersion = "";
+                constantVersion = string.Empty;
             versionChangers = changers;
             return true;
         }
@@ -93,12 +96,12 @@ namespace Cms.Buildeploy
             logWriter.WriteLine(format, args);
         }
 
-        public string ProcessAssemblyInfo(string fileName)
+        public Version ProcessAssemblyInfo(string fileName)
         {
             WriteLine("Processing File {0}", fileName);
             string newFile = Path.Combine(Path.GetDirectoryName(fileName), "AssemblyInfo.new");
 
-            string newVersion = null;
+            Version newVersion = null;
 
             using (StreamReader reader = new StreamReader(fileName, Encoding.Default))
             {
@@ -145,7 +148,7 @@ namespace Cms.Buildeploy
                 throw new InvalidOperationException("Cannot update file", ex);
             }
 
-            if (!string.IsNullOrEmpty(newVersion))
+            if (newVersion != null)
             {
                 WriteLine("Version Changed to {0}", newVersion);
                 return newVersion;
@@ -154,7 +157,7 @@ namespace Cms.Buildeploy
             return null;
         }
 
-        public string ProcessAssemblyInfo(TextReader reader, TextWriter writer)
+        public Version ProcessAssemblyInfo(TextReader reader, TextWriter writer)
         {
 
             Regex regex = new Regex("(\\[assembly:.*AssemblyVersion\\(\")(.*)(\"\\)\\])");
@@ -162,15 +165,19 @@ namespace Cms.Buildeploy
             var match = regex.Match(allText);
             if (match != null && match.Success)
             {
-                var changedVersion = ChangeVersion(match.Groups[1].Value);
-                writer.Write(regex.Replace(allText, "${1}" + changedVersion + "${3}"));
-                return changedVersion;
-            }
-            else
-            {
+                var currentVersion = Version.Parse(match.Groups[2].Value);
+                var changedVersion = new Version(ChangeVersion(currentVersion.ToString()));
+                if (AllowOlderVersions || changedVersion > currentVersion)
+                {
+                    writer.Write(regex.Replace(allText, "${1}" + changedVersion + "${3}"));
+                    return changedVersion;
+
+                }
                 writer.Write(allText);
+                return currentVersion;
             }
 
+            writer.Write(allText);
             return null;
         }
 

@@ -20,7 +20,7 @@ namespace Cms.Buildeploy.Tasks
 
             foreach (ITaskItem item in Files)
             {
-                NewVersion = parser.ProcessAssemblyInfo(item.ItemSpec);
+                NewVersion = parser.ProcessAssemblyInfo(item.ItemSpec)?.ToString();
             }
 
             return !string.IsNullOrEmpty(NewVersion);
