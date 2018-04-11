@@ -92,6 +92,7 @@
     <Compile Include="Tasks\SetVersionFromGitTag.cs" />
     <Compile Include="Tasks\SqlServerDropDatabase.cs" />
     <Compile Include="Tasks\SqlServerRestoreDatabase.cs" />
+    <Compile Include="Tasks\WriteTextFile.cs" />
     <Compile Include="Tasks\Zip.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="VersionChangerBase.cs" />

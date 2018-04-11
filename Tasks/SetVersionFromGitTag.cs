@@ -30,6 +30,9 @@ namespace Cms.Buildeploy.Tasks
         [Output]
         public string BuildTag { get; set; }
 
+        [Output]
+        public string ReleaseNotes { get; set; }
+
         public IGitTagProvider CreateTagProvider() => new GitTagProvider(Path.GetDirectoryName(BuildEngine.ProjectFileOfTaskNode));
 
         public override bool Execute()

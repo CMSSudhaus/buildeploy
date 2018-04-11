@@ -8,5 +8,7 @@ namespace Cms.Buildeploy.Tasks
         IEnumerable<string> GetTags();
 
         string CurrentBranchName { get; }
+        string GetDescriptionsSinceTag(string tagName);
+
     }
 }

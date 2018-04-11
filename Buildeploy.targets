@@ -64,6 +64,10 @@
         TaskName="Cms.Buildeploy.Tasks.SetVersionFromGitTag"
         AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
+  <UsingTask
+        TaskName="Cms.Buildeploy.Tasks.WriteTextFile"
+        AssemblyFile="$(BuildeployTasksAssemblyFile)" />
+
 
   <Target Name="Configurations">
     <CreateItem Include="$(TargetConfigurations)">
@@ -365,8 +369,9 @@
       HotFixVersionPattern="$(HotfixVersionPattern)">
 
       <Output TaskParameter="NewVersion" PropertyName="Version"/>
-      <Output TaskParameter="BuildTag" PropertyName="BuildTagName"
-      Condition="$(UseVersionFromGitTag)==true"/>
+      <Output TaskParameter="BuildTag" PropertyName="BuildTagName" Condition="$(UseVersionFromGitTag)==true"/>
+      <Output TaskParameter="ReleaseNotes" PropertyName="ReleaseNotes" Condition="$(UseVersionFromGitTag)==true"/>
+
     </SetVersionFromGitTag>
     <GetGitBranchName>
       <Output TaskParameter ="BranchName" PropertyName="BranchName"/>
@@ -428,6 +433,7 @@
 
     <CheckReferences Path="$(TempServerRedist)" MessageInfo="Server" Excludes="@(CheckReferenceExclude)"/>
     <MakeDir Directories="$(VersionRedistRoot)"/>
+    <WriteTextFile FileName="$(VersionRedistRoot)\releasenotes-$(Version).txt" Text="$(ReleaseNotes)" Condition="$(ReleaseNotes)!=''"/>
     <ItemGroup>
       <ClientRedistFiles Include="$(TempClientRedist)\**"/>
       <ServerRedistFiles Include="$(TempServerRedist)\**"/>

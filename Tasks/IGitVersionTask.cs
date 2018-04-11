@@ -14,5 +14,7 @@
 
         IGitTagProvider CreateTagProvider();
 
+string ReleaseNotes { get; set; }
+
     }
 }
