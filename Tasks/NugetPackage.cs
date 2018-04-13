@@ -1,21 +1,10 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="NugetPackage.cs" company="">
-// TODO: Update copyright text.
-// </copyright>
-// -----------------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.IO;
 using Microsoft.Build.Framework;
 using System.Diagnostics;
 using System.Threading;
 using System.Globalization;
 
-// -----------------------------------------------------------------------
-// <copyright file="NugetPackage.cs" company="">
-// TODO: Update copyright text.
-// </copyright>
-// -----------------------------------------------------------------------
 namespace Cms.Buildeploy.Tasks
 {
     /// <summary>

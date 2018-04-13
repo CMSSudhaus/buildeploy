@@ -23,6 +23,8 @@ namespace Cms.Buildeploy.Tasks
 
         public override bool Execute()
         {
+            if (Files == null || Files.Length == 0) return true;
+
             if (!Directory.Exists(LookupPath))
             {
                 Log.LogError("LookUpPath '{0}' not found.", LookupPath);

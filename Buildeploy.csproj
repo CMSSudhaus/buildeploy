@@ -84,6 +84,7 @@
     <Compile Include="Tasks\IGitTagProvider.cs" />
     <Compile Include="Tasks\IGitVersionTask.cs" />
     <Compile Include="Tasks\LogWriterTaskBase.cs" />
+    <Compile Include="Tasks\MakeDirAndRenameExisting.cs" />
     <Compile Include="Tasks\MSTest.cs" />
     <Compile Include="Tasks\NugetArchive.cs" />
     <Compile Include="Tasks\NugetPackage.cs" />

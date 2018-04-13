@@ -68,6 +68,9 @@
         TaskName="Cms.Buildeploy.Tasks.WriteTextFile"
         AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
+  <UsingTask
+        TaskName="Cms.Buildeploy.Tasks.MakeDirAndRenameExisting"
+        AssemblyFile="$(BuildeployTasksAssemblyFile)" />
 
   <Target Name="Configurations">
     <CreateItem Include="$(TargetConfigurations)">
@@ -86,9 +89,6 @@
         DependsOnTargets="Configurations;NugetRestore"
         Inputs="@(Configuration)"
         Outputs="target\%(Configuration.FileName)">
-
-
-
 
     <CallTarget Targets="BeforeBuild"/>
 
@@ -406,7 +406,7 @@
 
     <CallTarget Targets="RunUnitTests"/>
     <CallTarget Targets="RunMSTestMultipleProcesses" Condition="$(MSTestMultiProcess)==true"/>
-    <ResolveRedistAssemblies Files="@(ClientRedistFile)" LookUpPath="$(CompileOutput)">
+    <ResolveRedistAssemblies Files="@(ClientRedistFile)" LookUpPath="$(CompileOutput)" >
       <Output TaskParameter="Result" ItemName="RedistPath"/>
     </ResolveRedistAssemblies>
 
@@ -432,7 +432,7 @@
     <Copy SourceFiles="@(ServerLibDependencyPath)" DestinationFolder="$(TempServerRedist)"/>
 
     <CheckReferences Path="$(TempServerRedist)" MessageInfo="Server" Excludes="@(CheckReferenceExclude)"/>
-    <MakeDir Directories="$(VersionRedistRoot)"/>
+    <MakeDirAndRenameExisting DirectoryName="$(VersionRedistRoot)" Prefix="failed"/>
     <WriteTextFile FileName="$(VersionRedistRoot)\releasenotes-$(Version).txt" Text="$(ReleaseNotes)" Condition="$(ReleaseNotes)!=''"/>
     <ItemGroup>
       <ClientRedistFiles Include="$(TempClientRedist)\**"/>
@@ -459,6 +459,9 @@
   <Target Name="RunUnitTests" />
   <Target Name="PrecompileWeb"  Condition="$(WebsiteSource)!=''">
 
+    <PropertyGroup>
+      <CompileOutput>$(MSBuildProjectDirectory)\bin\$(RedistConfiguration)\</CompileOutput>
+    </PropertyGroup>
     <Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
 
     <RemoveDir Directories="$(CompiledSite)"/>
@@ -485,7 +488,7 @@
         TargetPath="$(CompiledSite)"
         Debug="true"
         FixedNames="true"
-	      Updateable="false"
+        Updateable="false"
         />
     <Message Text="WebSiteCompileExclude: @(WebSiteCompileExclude)" />
     <Delete Files="@(WebsiteCompileExclude)"/>
