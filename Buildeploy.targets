@@ -366,11 +366,12 @@
     <SetVersionFromGitTag
       Files="@(VersionFile)"
       MasterVersionPattern="$(MasterVersionPattern)"
-      HotFixVersionPattern="$(HotfixVersionPattern)">
-
+      HotFixVersionPattern="$(HotfixVersionPattern)"
+      Condition="$(UseVersionFromGitTag)==true AND $(MasterVersionPattern)!=''">
+      
       <Output TaskParameter="NewVersion" PropertyName="Version"/>
-      <Output TaskParameter="BuildTag" PropertyName="BuildTagName" Condition="$(UseVersionFromGitTag)==true"/>
-      <Output TaskParameter="ReleaseNotes" PropertyName="ReleaseNotes" Condition="$(UseVersionFromGitTag)==true"/>
+      <Output TaskParameter="BuildTag" PropertyName="BuildTagName" />
+      <Output TaskParameter="ReleaseNotes" PropertyName="ReleaseNotes" />
 
     </SetVersionFromGitTag>
     <GetGitBranchName>
