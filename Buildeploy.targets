@@ -433,7 +433,7 @@
     <Copy SourceFiles="@(ServerLibDependencyPath)" DestinationFolder="$(TempServerRedist)"/>
 
     <CheckReferences Path="$(TempServerRedist)" MessageInfo="Server" Excludes="@(CheckReferenceExclude)"/>
-    <MakeDirAndRenameExisting DirectoryName="$(VersionRedistRoot)" Prefix="failed"/>
+    <MakeDirAndRenameExisting DirectoryName="$(VersionRedistRoot)" Prefix="failed" Condition="$(IgnoreExistingRedistRoot)!=true" />
     <WriteTextFile FileName="$(VersionRedistRoot)\releasenotes-$(Version).txt" Text="$(ReleaseNotes)" Condition="$(ReleaseNotes)!=''"/>
     <ItemGroup>
       <ClientRedistFiles Include="$(TempClientRedist)\**"/>
@@ -453,7 +453,7 @@
 
   <Target Name="RedistProjects">
     <MSBuild Projects="@(RedistProject)"
-            Properties="Configuration=%(Configuration.Identity);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL);NugetExe=$(NugetExe);SkipBuild=True;RedistRoot=$(RedistRoot);VersionPattern=*.*.*.*;BuildDefinition=$(BuildDefinition);UseBranchNameForVersionTag=$(UseBranchNameForVersionTag);BranchName=$(BranchName)"
+            Properties="Configuration=%(Configuration.Identity);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL);NugetExe=$(NugetExe);SkipBuild=True;RedistRoot=$(RedistRoot);VersionPattern=*.*.*.*;BuildDefinition=$(BuildDefinition);UseBranchNameForVersionTag=$(UseBranchNameForVersionTag);BranchName=$(BranchName);IgnoreExistingRedistRoot=true"
              StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="RedistBinaries;PrecompileWeb;OctoPackage;OctoDeploy;ClickOnce;"/>
   </Target>
   <Target Name="AfterWebsiteCompiled" />
