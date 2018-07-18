@@ -422,8 +422,7 @@
     <Copy SourceFiles="@(ClientLibDependencyPath)" DestinationFolder="$(TempClientRedist)"/>
     <Copy SourceFiles="@(RedistWithTargetPath)" DestinationFiles = "@(RedistWithTargetPath->'$(TempClientRedist)\%(TargetPath)')"/>
     <Copy SourceFiles="@(ClientDependency)" DestinationFolder="$(TempClientRedist)"/>
-    <CallTarget Targets="CopyLocalizationFiles" />
-
+    <Copy SourceFiles="$(DefaultClientConfigFile)" DestinationFiles="$(TempClientRedist)\$(ClickOnceEntryPoint).config" Condition="$(DefaultClientConfigFile)!='' AND $(ClickOnceEntryPoint)!=''"/>
     <CheckReferences Path="$(TempClientRedist)" MessageInfo="Client" Excludes="@(CheckReferenceExclude)"/>
     <MakeDir Directories="$(TempServerRedist)"/>
 
@@ -431,7 +430,7 @@
     <Copy SourceFiles="@(ServerRedistPath)" DestinationFolder="$(TempServerRedist)"/>
     <Copy SourceFiles="@(ServerDependency)" DestinationFolder="$(TempServerRedist)"/>
     <Copy SourceFiles="@(ServerLibDependencyPath)" DestinationFolder="$(TempServerRedist)"/>
-
+  
     <CheckReferences Path="$(TempServerRedist)" MessageInfo="Server" Excludes="@(CheckReferenceExclude)"/>
     <MakeDirAndRenameExisting DirectoryName="$(VersionRedistRoot)" Prefix="failed" Condition="$(IgnoreExistingRedistRoot)!=true" />
     <WriteTextFile FileName="$(VersionRedistRoot)\releasenotes-$(Version).txt" Text="$(ReleaseNotes)" Condition="$(ReleaseNotes)!=''"/>
@@ -442,11 +441,11 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(RedistFiles)" DestinationFolder="$(VersionRedistRoot)\%(RecursiveDir)"/>
-    <Zip Files="@(ClientRedistFiles)" WorkingDirectory="$(TempClientRedist)" ZipFileName="$(VersionRedistRoot)\Client-v$(SemVersion).zip" />
-    <Zip Files="@(ServerRedistFiles)" WorkingDirectory="$(TempServerRedist)" ZipFileName="$(VersionRedistRoot)\Server-v$(SemVersion).zip" />
+    <Zip Files="@(ClientRedistFiles)" WorkingDirectory="$(TempClientRedist)" ZipFileName="$(VersionRedistRoot)\$(RedistArchivePrefix)Client-v$(SemVersion).zip" Condition="@(ClientRedistFiles)!=''" />
+    <Zip Files="@(ServerRedistFiles)" WorkingDirectory="$(TempServerRedist)" ZipFileName="$(VersionRedistRoot)\$(RedistArchivePrefix)Server-v$(SemVersion).zip" Condition="@(ServerRedistFiles)!=''"/>
 
 
-    <Zip Files="@(PdbFiles)" WorkingDirectory="$(CompileOutput)" ZipFileName="$(VersionRedistRoot)\Symbols-v$(SemVersion).zip" />
+    <Zip Files="@(PdbFiles)" WorkingDirectory="$(CompileOutput)" ZipFileName="$(VersionRedistRoot)\$(RedistArchivePrefix)Symbols-v$(SemVersion).zip" Condition="@(PdbFiles) != ''" />
 
 
   </Target>
@@ -499,7 +498,7 @@
     <CallTarget Targets="AfterWebsiteCompiled"/>
     <CallTarget Targets="RunUnitTests"/>
 
-    <CheckReferences Path="$(WebSiteSource)\bin" MessageInfo="Website" Excludes="@(CheckReferenceExclude)"/>
+    <CheckReferences Path="$(WebSiteSource)\bin" MessageInfo="Website" Excludes="@(CheckReferenceExclude)" Condition="$(WebSiteSource)!=''"/>
     <ItemGroup>
       <CompiledSite Include="$(CompiledSite)\**\*.*" Exclude="$(CompiledSite)\**\*.csproj;$(CompiledSite)\**\*.user;$(CompiledSite)\obj\**;$(CompiledSite)\**\web*.config;$(CompiledSite)\**\*.snk;$(CompiledSite)\**\*.log" />
     </ItemGroup>

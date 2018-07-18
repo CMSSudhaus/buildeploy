@@ -42,7 +42,7 @@ namespace Cms.Buildeploy.Tasks
                     break;
 
                 var slnRelativePath = line.Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries)[1].Trim().Replace("\"", string.Empty);
-                if (!slnRelativePath.EndsWith(".csproj"))
+                if (!slnRelativePath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
                     continue;
                 
                 yield return Path.Combine(solutionDirectory, slnRelativePath);
