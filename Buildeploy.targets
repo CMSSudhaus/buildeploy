@@ -424,6 +424,7 @@
     <Copy SourceFiles="@(ClientDependency)" DestinationFolder="$(TempClientRedist)"/>
     <Copy SourceFiles="$(DefaultClientConfigFile)" DestinationFiles="$(TempClientRedist)\$(ClickOnceEntryPoint).config" Condition="$(DefaultClientConfigFile)!='' AND $(ClickOnceEntryPoint)!=''"/>
     <CheckReferences Path="$(TempClientRedist)" MessageInfo="Client" Excludes="@(CheckReferenceExclude)"/>
+    <CallTarget Targets="CopyLocalizationFiles"/> 
     <MakeDir Directories="$(TempServerRedist)"/>
 
     <Copy SourceFiles="@(ServerLibPath)" DestinationFolder="$(TempServerRedist)"/>
