@@ -16,10 +16,10 @@
       <Output TaskParameter="NewVersion" PropertyName="Version"/>
     </ChangeVersion>
 
-
+    
     <MakeDir Directories="bin\nuget"/>
     <Exec ContinueOnError="false" Command="$(NuGetTool) pack nuspec\Buildeploy.nuspec -BasePath $(MSBuildProjectDirectory) -OutputDirectory bin\NuGet -Version $(Version) -Properties SourceDir=bin\debug"/>
 	<Exec ContinueOnError="false" Command="$(NuGetTool) push bin\Nuget\buildeploy.net.$(Version).nupkg $(ApiKey)" Condition="$(ApiKey)!=''"/>
   </Target>
-  
+
  </Project>

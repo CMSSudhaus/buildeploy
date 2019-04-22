@@ -280,7 +280,9 @@
       <NoCacheOption Condition="$(NugetRestoreNoCache)==true">-NoCache</NoCacheOption>
     </PropertyGroup>
     <Exec Command="$(NugetExe) restore %(PackagesConfig.FullPath) -Recursive -Source $(NugetPackagesSource) -PackagesDirectory $(MSBuildProjectDirectory)\packages $(NoCacheOption)"
-          Condition="Exists(%(PackagesConfig.FullPath))"/>
+          Condition="Exists(%(PackagesConfig.FullPath)) And $(NugetConfigFile)==''"/>
+    <Exec Command="$(NugetExe) restore %(PackagesConfig.FullPath) -Recursive -ConfigFile $(NugetConfigFile) -PackagesDirectory $(MSBuildProjectDirectory)\packages $(NoCacheOption)"
+          Condition="Exists(%(PackagesConfig.FullPath)) And $(NugetConfigFile)!=''"/>
   </Target>
 
   <Target Name="OctoDeploy" Inputs="@(OctoConfig)" Outputs="NotUsedOutput">
