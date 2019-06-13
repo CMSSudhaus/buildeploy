@@ -14,6 +14,7 @@ namespace Cms.Buildeploy.Tasks
         public string Path { get; set; }
 
 
+        public ITaskItem[] Assemblies { get; set; }
 
         public override bool Execute()
         {
@@ -33,13 +34,18 @@ namespace Cms.Buildeploy.Tasks
                 ReferenceChecker checker = (ReferenceChecker)domain.CreateInstanceFromAndUnwrap(assembly, className);
 
                 checker.RootPath = Path;
-
+                    
                 if (Excludes != null)
                 {
                     foreach (ITaskItem item in Excludes)
                         checker.AddExclude(new AssemblyName(item.ItemSpec));
                 }
 
+                if (Assemblies!=null)
+                {
+                    foreach (var item in Assemblies)
+                        checker.AddAssembly(item.ItemSpec);
+                }
                 checker.Check();
                 MissingReference[] reportedAssemblies = checker.GetReportedAssemblies();
 

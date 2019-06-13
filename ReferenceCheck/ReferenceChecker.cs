@@ -9,21 +9,21 @@ namespace Cms.Buildeploy.ReferenceCheck
 {
     class ReferenceChecker : MarshalByRefObject
     {
-        private static string[] excludeNames = { "mscorlib", "System", "System.Drawing", "System.Windows.Forms" , "System.Core", "System.Xml", "System.Net", 
+        private static string[] excludeNames = { "mscorlib", "System", "System.Drawing", "System.Windows.Forms" , "System.Core", "System.Xml", "System.Net",
                                                    "System.Windows.Browser","System.ServiceModel.Web", "System.ServiceModel", "System.Runtime.Serialization",
                                                "System.Data.DataSetExtensions","System.Xml.Linq"};
         private string rootPath;
-        private AssemblyCollection excludedAssemblies = new AssemblyCollection();
-        private MissingAssemblyCollection reportedAssemblies = new MissingAssemblyCollection();
         private const string frameworkLibResourceName = "Cms.Buildeploy.FrameworkAssemblies.txt";
         private static IList<AssemblyName> frameworkAssemblyNames;
 
         public ReferenceChecker()
         {
             foreach (var asssemblyName in FrameworkAssemblyNames)
-                excludedAssemblies.Add(asssemblyName);
+                ExcludedAssemblies.Add(asssemblyName);
         }
 
+
+        private AssemblyCollection Assemblies { get; } = new AssemblyCollection();
 
         private static IList<AssemblyName> FrameworkAssemblyNames
         {
@@ -62,8 +62,8 @@ namespace Cms.Buildeploy.ReferenceCheck
             get { return rootPath; }
             set { rootPath = value; }
         }
-        private AssemblyCollection ExcludedAssemblies { get { return excludedAssemblies; } }
-        private MissingAssemblyCollection ReportedAssemblies { get { return reportedAssemblies; } }
+        private AssemblyCollection ExcludedAssemblies { get; } = new AssemblyCollection();
+        private MissingAssemblyCollection ReportedAssemblies { get; } = new MissingAssemblyCollection();
 
         public MissingReference[] GetReportedAssemblies()
         {
@@ -73,8 +73,8 @@ namespace Cms.Buildeploy.ReferenceCheck
         }
         internal void Check()
         {
-            AssemblyCollection assemblies = GetAssemblies(RootPath, true);
-            foreach (AssemblyName assemblyName in assemblies)
+            if (Assemblies.Count == 0) CollectAssemblies(RootPath, true);
+            foreach (AssemblyName assemblyName in Assemblies)
             {
                 if (ExcludedAssemblies.FindLazy(assemblyName) == null)
                 {
@@ -88,25 +88,25 @@ namespace Cms.Buildeploy.ReferenceCheck
                     }
 
                     if (assembly != null)
-                        CheckReferences(assemblies, assembly);
+                        CheckReferences(assembly);
                 }
             }
 
         }
         private static bool IsExcluded(AssemblyName name)
         {
-            return Array.Find(excludeNames, delegate(string s) { return name.Name == s; }) != null;
+            return Array.Find(excludeNames, delegate (string s) { return name.Name == s; }) != null;
         }
 
-        private void CheckReferences(AssemblyCollection assemblies, Assembly assembly)
+        private void CheckReferences(Assembly assembly)
         {
             AssemblyName[] references = assembly.GetReferencedAssemblies();
             foreach (AssemblyName name in references)
             {
                 //Wenn die Referenz nirgendwo zu finden ist, dann ausgeben.
-                if (assemblies.Find(name) == null && excludedAssemblies.FindLazy(name) == null && !IsExcluded(name) && reportedAssemblies.Find(name) == null)
+                if (Assemblies.Find(name) == null && ExcludedAssemblies.FindLazy(name) == null && !IsExcluded(name) && ReportedAssemblies.Find(name) == null)
                 {
-                    reportedAssemblies.Add(new MissingReference() { MissingAssembly = name, ReferencesBy = assembly.GetName() });
+                    ReportedAssemblies.Add(new MissingReference() { MissingAssembly = name, ReferencesBy = assembly.GetName() });
                 }
             }
         }
@@ -117,12 +117,9 @@ namespace Cms.Buildeploy.ReferenceCheck
         /// <param name="path">Zu durchsuchende Verzeichnis</param>
         /// <param name="recursive">Gibt an, ob Unterverzeichnisse durchsucht werden sollen</param>
         /// <returns></returns>
-        private AssemblyCollection GetAssemblies(string path, bool recursive)
+        private void CollectAssemblies(string path, bool recursive)
         {
-
-            AssemblyCollection assemblies = new AssemblyCollection();
-            AddAssemblies(path, assemblies, recursive);
-            return assemblies;
+            AddAssemblies(path, recursive);
         }
 
         /// <summary>
@@ -131,22 +128,13 @@ namespace Cms.Buildeploy.ReferenceCheck
         /// <param name="path">Zu durchsuchende Verzeichnis</param>
         /// <param name="assemblies">Collection, die gefüllt wird</param>
         /// <param name="recursive">Gibt an, ob Unterverzeichnisse durchsucht werden sollen</param>
-        private void AddAssemblies(string path, AssemblyCollection assemblies, bool recursive)
+        private void AddAssemblies(string path, bool recursive)
         {
             //Dateinamen holen
             string[] files = Directory.GetFiles(path);
             foreach (string fileName in files)
             {
-                try
-                {
-                    //Assemblynamen erstellen und hinzufügen
-                    AssemblyName asm = AssemblyName.GetAssemblyName(fileName);
-                    assemblies.Add(asm);
-                }
-                //Exceptions abfangen, fall die Datei keine Assembly ist.
-                catch (BadImageFormatException) { }
-                catch (FileLoadException) { }
-                catch (FileNotFoundException) { }
+                AddAssembly(fileName);
             }
 
             //Wenn recusive=true, Unterverzeichnisse druchsuchen
@@ -154,8 +142,22 @@ namespace Cms.Buildeploy.ReferenceCheck
             {
                 string[] directories = Directory.GetDirectories(path);
                 foreach (string dir in directories)
-                    AddAssemblies(dir, assemblies, recursive);
+                    AddAssemblies(dir, recursive);
             }
+        }
+
+        internal void AddAssembly(string fileName)
+        {
+            try
+            {
+                //Assemblynamen erstellen und hinzufügen
+                AssemblyName asm = AssemblyName.GetAssemblyName(fileName);
+                Assemblies.Add(asm);
+            }
+            //Exceptions abfangen, fall die Datei keine Assembly ist.
+            catch (BadImageFormatException) { }
+            catch (FileLoadException) { }
+            catch (FileNotFoundException) { }
         }
 
         internal void AddExclude(AssemblyName assemblyName)

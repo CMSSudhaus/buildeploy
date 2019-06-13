@@ -95,14 +95,14 @@
     <PropertyGroup>
       <CompileOutputFolder Condition="$(CompileOutputFolder)==''">$(MSBuildProjectDirectory)\bin\%(Configuration.Identity)\</CompileOutputFolder>
       <ReferencePath>$(CompileOutputFolder)</ReferencePath>
+      <ProjectOutDir Condition="$(PerserveOutDirs)!=true">$(CompileOutputFolder)</ProjectOutDir>
     </PropertyGroup>
 
     <RemoveDir Directories="$(CompileOutputFolder)" />
     <Copy SourceFiles="@(ReferenceFile)" DestinationFolder="$(CompileOutputFolder)"/>
     <MakeDir  Directories="$(CompileOutputFolder)" />
-
     <MSBuild Projects="@(ProjectToBuild)"
-                 Properties="Configuration=%(Configuration.Identity);OutDir=$(CompileOutputFolder);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL)"
+                 Properties="Configuration=%(Configuration.Identity);OutDir=$(ProjectOutDir);ReferencePath=$(LibraryReferencePath)&#59;$(LibraryReferencePathSL)"
                  StopOnFirstFailure="true" ToolsVersion="$(ToolsVersion)"  Targets="Clean;Rebuild"
                  Condition="$(CopyBuildResultsFromFolder)==''"/>
 
@@ -425,6 +425,9 @@
     <Copy SourceFiles="@(RedistWithTargetPath)" DestinationFiles = "@(RedistWithTargetPath->'$(TempClientRedist)\%(TargetPath)')"/>
     <Copy SourceFiles="@(ClientDependency)" DestinationFolder="$(TempClientRedist)"/>
     <Copy SourceFiles="$(DefaultClientConfigFile)" DestinationFiles="$(TempClientRedist)\$(ClickOnceEntryPoint).config" Condition="$(DefaultClientConfigFile)!='' AND $(ClickOnceEntryPoint)!=''"/>
+    
+    
+    
     <CheckReferences Path="$(TempClientRedist)" MessageInfo="Client" Excludes="@(CheckReferenceExclude)"/>
     <CallTarget Targets="CopyLocalizationFiles"/> 
     <MakeDir Directories="$(TempServerRedist)"/>
@@ -464,21 +467,27 @@
 
     <PropertyGroup>
       <CompileOutput>$(MSBuildProjectDirectory)\bin\$(RedistConfiguration)\</CompileOutput>
+      <WebsiteBinariesDir Condition="$(PerserveOutDirs)!=true">$(CompileOutput)</WebsiteBinariesDir>
+      <WebsiteBinariesDir Condition="$(PerserveOutDirs)==true">$(WebsiteSource)\bin</WebsiteBinariesDir>
+      <WebsiteSourceBin>$(WebsiteSource)\bin</WebsiteSourceBin>
     </PropertyGroup>
     <Error Condition="$(VersionRedistRoot)==''" Text="Property 'VersionRedistRoot' is not specified."/>
 
     <RemoveDir Directories="$(CompiledSite)"/>
-    <RemoveDir Directories="$(WebsiteSource)\bin"/>
+    <RemoveDir Directories="$(WebsiteSourceBin)" Condition="$(PerserveOutDirs)!=true"/>
 
-    <ResolveRedistAssemblies Files="@(WebsiteDependency)" LookUpPath="$(CompileOutput)">
+    <Copy SourceFiles="@(ReferenceFile)" DestinationFolder="$(WebsiteSourceBin)" Condition="$(PerserveOutDirs)==true"/>
+    <ResolveRedistAssemblies Files="@(WebsiteDependency)" LookUpPath="$(WebsiteBinariesDir)">
       <Output TaskParameter="Result" ItemName="WebsiteFileTemp"/>
     </ResolveRedistAssemblies>
 
-    <AssignTargetPath Files="@(WebsiteFileTemp)" RootFolder="$(CompileOutput)">
+    <AssignTargetPath Files="@(WebsiteFileTemp)" RootFolder="$(WebsiteBinariesDir)">
       <Output TaskParameter="AssignedFiles" ItemName="WebsiteFile"/>
     </AssignTargetPath>
 
-    <Copy SourceFiles="@(WebsiteFile)" DestinationFiles = "@(WebsiteFile->'$(WebSiteSource)\bin\%(TargetPath)')"/>
+    <Copy SourceFiles="@(WebsiteFile)" DestinationFiles = "@(WebsiteFile->'$(WebSiteSourceBin)\%(TargetPath)')" Condition="$(PerserveOutDirs)!=true"/>
+    
+    
     <ItemGroup>
       <ServerRedistFiles Include="$(TempServerRedist)\**"/>
     </ItemGroup>
@@ -501,7 +510,11 @@
     <CallTarget Targets="AfterWebsiteCompiled"/>
     <CallTarget Targets="RunUnitTests"/>
 
-    <CheckReferences Path="$(WebSiteSource)\bin" MessageInfo="Website" Excludes="@(CheckReferenceExclude)" Condition="$(WebSiteSource)!=''"/>
+    <ItemGroup>
+      <CheckReferenceAssembly Include="$(WebsiteSourceBin)\**\*.dll" Exclude="$(WebsiteSourceBin)\roslyn\**"/>
+    </ItemGroup>
+    
+    <CheckReferences Assemblies="@(CheckReferenceAssembly)" MessageInfo="Website" Excludes="@(CheckReferenceExclude)" Condition="$(WebSiteSource)!=''"/>
     <ItemGroup>
       <CompiledSite Include="$(CompiledSite)\**\*.*" Exclude="$(CompiledSite)\**\*.csproj;$(CompiledSite)\**\*.user;$(CompiledSite)\obj\**;$(CompiledSite)\**\web*.config;$(CompiledSite)\**\*.snk;$(CompiledSite)\**\*.log" />
     </ItemGroup>
