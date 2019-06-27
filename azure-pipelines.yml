@@ -32,7 +32,7 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- task: MSBuild@2
+- task: MSBuild@1
   inputs:
     solution: '$(solution)'
     platform: '$(buildPlatform)'
