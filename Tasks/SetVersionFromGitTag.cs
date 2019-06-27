@@ -33,24 +33,49 @@ namespace Cms.Buildeploy.Tasks
         [Output]
         public string ReleaseNotes { get; set; }
 
-        public IGitTagProvider CreateTagProvider() => new GitTagProvider(Path.GetDirectoryName(BuildEngine.ProjectFileOfTaskNode));
+        public IGitTagProvider CreateTagProvider()
+        {
+            if (CanCreateTagProvider())
+                return new GitTagProvider(Path.GetDirectoryName(GetBuildProjectPath()));
+            else
+                return null;
+        }
 
+        private string GetBuildProjectPath()
+        {
+            return BuildEngine.ProjectFileOfTaskNode;
+        }
+
+        private bool CanCreateTagProvider() => File.Exists(GetBuildProjectPath());
         public override bool Execute()
         {
-            using (GitVersionWorker worker = new GitVersionWorker(this))
+            if (CanCreateTagProvider())
             {
-                worker.Execute();
-                NewVersion = worker.NewVersion.ToString();
-                BuildTag = worker.TagName;
-                ChangeVersionParser parser = new ChangeVersionParser(NewVersion, this);
-                foreach (var fileItem in Files)
+                using (GitVersionWorker worker = new GitVersionWorker(this))
                 {
-                    if (!File.Exists(fileItem.ItemSpec))
-                        File.WriteAllText(fileItem.ItemSpec, "[assembly: System.Reflection.AssemblyVersion(\"0.0.0.0\")]\r\n");
-                    parser.ProcessAssemblyInfo(fileItem.ItemSpec);
+                    worker.Execute();
+                    NewVersion = worker.NewVersion.ToString();
+                    BuildTag = worker.TagName;
+                    PatchVersion();
+                    return true;
                 }
-
+            }
+            else
+            {
+                NewVersion = "*.*.*.*";
+                PatchVersion();
                 return true;
+            }
+        }
+
+        private void PatchVersion()
+        {
+            ChangeVersionParser parser = new ChangeVersionParser(NewVersion, this);
+            foreach (var fileItem in Files)
+            {
+                if (!File.Exists(fileItem.ItemSpec))
+                    File.WriteAllText(fileItem.ItemSpec, "[assembly: System.Reflection.AssemblyVersion(\"0.0.0.0\")]\r\n");
+                parser.ProcessAssemblyInfo(fileItem.ItemSpec);
             }
         }
     }
