@@ -4,7 +4,6 @@
   </PropertyGroup>
   <Import Project="Buildeploy.targets"/>
   <PropertyGroup>
-    <NuGetTool>packages\NuGet.CommandLine.2.8.2\tools\NuGet.exe</NuGetTool>
     <TargetConfigurations>Debug</TargetConfigurations>
     <VersionPattern>*.*.+1.0</VersionPattern>
     <NugetOutputDirectory>bin\nuget</NugetOutputDirectory>
@@ -17,6 +16,10 @@
     <ChangeVersion Files="Properties\AssemblyInfo.cs" Version="$(VersionPattern)">
       <Output TaskParameter="NewVersion" PropertyName="Version"/>
     </ChangeVersion>
+    <DownloadFile SourceUrl="https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" DestinationFolder="$(OutputPath)">
+      <Output TaskParameter="DownloadedFile" PropertyName="NugetTool"/>   
+    </DownloadFile>
+  
 
     
     <MakeDir Directories="bin\nuget"/>
