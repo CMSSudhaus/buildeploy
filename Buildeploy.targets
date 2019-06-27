@@ -285,7 +285,7 @@
           Condition="Exists(%(PackagesConfig.FullPath)) And $(NugetConfigFile)!=''"/>
   </Target>
 
-  <Target Name="OctoDeploy" Inputs="@(OctoConfig)" Outputs="NotUsedOutput">
+  <Target Name="OctoDeploy" Inputs="@(OctoConfig)" Outputs="NotUsedOutput" Condition="$(DisableOctoDeploy)!=true">
     <PropertyGroup>
       <PackagesDirPath>$(VersionRedistRoot)\Packages</PackagesDirPath>
       <BranchVariableOption Condition="$(IsBranchBuild)==true">--variable=BranchName:$(BranchName)</BranchVariableOption>
