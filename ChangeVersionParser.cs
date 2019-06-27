@@ -22,7 +22,8 @@ namespace Cms.Buildeploy
             this.logWriter = logWriter;
 
             this.VersionChangePattern = versionChangePattern;
-            ParseVersion(versionChangePattern);
+            if (!ParseVersion(versionChangePattern))
+                throw new ArgumentException($"Invalid version pattern: {versionChangePattern}", nameof(versionChangePattern));
         }
 
         public bool ShouldCreateBackup { get; set; }
