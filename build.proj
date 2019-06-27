@@ -6,13 +6,14 @@
   <PropertyGroup>
     <NuGetTool>packages\NuGet.CommandLine.2.8.2\tools\NuGet.exe</NuGetTool>
     <TargetConfigurations>Debug</TargetConfigurations>
+    <VersionPattern>*.*.+1.0</VersionPattern>
   </PropertyGroup>
   <ItemGroup>
     <ProjectToBuild Include="Buildeploy.sln"/>
   </ItemGroup>
 
   <Target Name="NuGet" DependsOnTargets="Build">
-    <ChangeVersion Files="Properties\AssemblyInfo.cs" Version="*.*.+1.0">
+    <ChangeVersion Files="Properties\AssemblyInfo.cs" Version="$(VersionPattern)">
       <Output TaskParameter="NewVersion" PropertyName="Version"/>
     </ChangeVersion>
 
