@@ -34,7 +34,7 @@ steps:
     solution: '$(solution)'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
-    msbuildArguments: '/t:NuGet /p:VersionPattern="1.0.$(Build.BuildId).0"'
+    msbuildArguments: '/t:NuGet /p:VersionPattern="1.0.$(Build.BuildId).0" /p:NugetOutputDirectory="$(Build.ArtifactStagingDirectory)""'
 
 - task: NuGetCommand@2
   inputs:
