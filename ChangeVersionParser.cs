@@ -183,6 +183,9 @@ namespace Cms.Buildeploy
 
         public string ChangeVersion(string version)
         {
+            if (version == null)
+                throw new ArgumentNullException(nameof(version));
+
             string newVersion;
             string[] parts = version.Split('.');
 

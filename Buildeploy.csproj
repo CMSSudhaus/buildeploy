@@ -109,9 +109,6 @@
   <ItemGroup>
     <EmbeddedResource Include="FrameworkAssemblies.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="packages\RefactoringEssentials.1.1.0\tools\analyzers\RefactoringEssentials.dll" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
