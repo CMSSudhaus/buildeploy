@@ -7,7 +7,7 @@
     <NuGetTool>packages\NuGet.CommandLine.2.8.2\tools\NuGet.exe</NuGetTool>
     <TargetConfigurations>Debug</TargetConfigurations>
     <VersionPattern>*.*.+1.0</VersionPattern>
-    <NugetOutputDirectory>bin\nuget<NugetOutputDirectory>
+    <NugetOutputDirectory>bin\nuget</NugetOutputDirectory>
   </PropertyGroup>
   <ItemGroup>
     <ProjectToBuild Include="Buildeploy.sln"/>
