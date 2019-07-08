@@ -16,11 +16,14 @@
     <ChangeVersion Files="Properties\AssemblyInfo.cs" Version="$(VersionPattern)">
       <Output TaskParameter="NewVersion" PropertyName="Version"/>
     </ChangeVersion>
-    <DownloadFile SourceUrl="https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" DestinationFolder="$(MSBuildProjectDirectory)">
+  
+    <PropertyGroup Condition="Exists('nuget.exe')">
+      <NugetTool>nuget.exe</NugetTool>
+    </PropertyGroup>
+  
+    <DownloadFile Condition="!Exists('nuget.exe')" SourceUrl="https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" DestinationFolder="$(MSBuildProjectDirectory)">
       <Output TaskParameter="DownloadedFile" PropertyName="NugetTool"/>   
     </DownloadFile>
-  
-
     
     <MakeDir Directories="bin\nuget"/>
     <Exec ContinueOnError="false" Command="$(NuGetTool) pack nuspec\Buildeploy.nuspec -BasePath $(MSBuildProjectDirectory) -OutputDirectory $(NugetOutputDirectory) -Version $(Version) -Properties SourceDir=bin\debug"/>

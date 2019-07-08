@@ -7,4 +7,5 @@ if (-Not (Test-Path $targetPath  -PathType Container))
 }
 
 copy "$toolspath\*.dll" $targetPath
+copy "$toolspath\lib\*.*" $targetPath -Recurse
 copy "$toolspath\*.targets" $targetPath

@@ -14,8 +14,9 @@
   </metadata>
   <files>
     <file src="$SourceDir$\buildeploy.dll" target="tools\buildeploy.dll" />
-	<file src="$SourceDir$\ICSharpCode.SharpZipLib.dll" target="tools\ICSharpCode.SharpZipLib.dll" />
+    <file src="$SourceDir$\ICSharpCode.SharpZipLib.dll" target="tools\ICSharpCode.SharpZipLib.dll" />
     <file src="$SourceDir$\buildeploy.targets" target="tools\buildeploy.targets" />
-	<file src="nuspec\Init.ps1"  target="tools\Init.ps1"/>
+    <file src="$SourceDir$\lib\win32\**" target="tools\lib\win32" />
+    <file src="nuspec\Init.ps1" target="tools\Init.ps1"/>
   </files>
 </package>
