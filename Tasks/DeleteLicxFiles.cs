@@ -52,7 +52,8 @@ namespace Cms.Buildeploy.Tasks
 
         private void HandleProjectFile(string projectFileLocation)
         {
-            var project = new Project(projectFileLocation);
+            var project = TryLoadProject(projectFileLocation);
+            if (project == null) return;
             try
             {
                 var license = project.GetItemsByEvaluatedInclude(@"Properties\licenses.licx").SingleOrDefault();
@@ -70,6 +71,19 @@ namespace Cms.Buildeploy.Tasks
             finally
             {
                 ProjectCollection.GlobalProjectCollection.UnloadProject(project);
+            }
+        }
+
+        private Project TryLoadProject(string projectFileLocation)
+        {
+            try
+            {
+                return new Project(projectFileLocation);
+            }
+            catch(Exception ex)
+            {
+                Log.LogWarning("Cannot load project '{0}':\r\n {1}", ex);
+                return null;
             }
         }
 
