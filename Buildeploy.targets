@@ -119,12 +119,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <LibLocalizationItems Include="$(LibPath)\%(LocalizationCulture.FileName)\*.dll"/>
       <AdditionalLocalizationItems Include="$(LocalizationFilesPath)\%(LocalizationCulture.FileName)\*.dll"/>
       <LocalizationItems Include="$(CompileOutput)\%(LocalizationCulture.FileName)\*.dll"/>
     </ItemGroup>
     <MakeDir Directories="$(TempClientRedist)\%(LocalizationCulture.FileName)"/>
 
-
+    <Copy SourceFiles="@(LibLocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)" />
     <Copy SourceFiles="@(LocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)"/>
     <Copy SourceFiles="@(AdditionalLocalizationItems)" DestinationFolder="$(TempLocalizationFiles)\%(LocalizationCulture.FileName)"/>
   </Target>
