@@ -18,10 +18,11 @@ namespace Cms.Buildeploy.ReferenceCheck
 
         public ReferenceChecker()
         {
-            foreach (var asssemblyName in FrameworkAssemblyNames)
-                ExcludedAssemblies.Add(asssemblyName);
+
         }
 
+
+        public bool IgnoreVersions { get; set; }
 
         private AssemblyCollection Assemblies { get; } = new AssemblyCollection();
 
@@ -62,7 +63,22 @@ namespace Cms.Buildeploy.ReferenceCheck
             get { return rootPath; }
             set { rootPath = value; }
         }
-        private AssemblyCollection ExcludedAssemblies { get; } = new AssemblyCollection();
+
+        private AssemblyCollection excludedAssemblies;
+        private AssemblyCollection ExcludedAssemblies
+        {
+            get
+            {
+                if (excludedAssemblies == null)
+                {
+                    excludedAssemblies = new AssemblyCollection();
+                    foreach (var asssemblyName in FrameworkAssemblyNames)
+                        excludedAssemblies.Add(PrepareAssemblyName(asssemblyName));
+                }
+
+                return excludedAssemblies;
+            }
+        }
         private MissingAssemblyCollection ReportedAssemblies { get; } = new MissingAssemblyCollection();
 
         public MissingReference[] GetReportedAssemblies()
@@ -98,9 +114,18 @@ namespace Cms.Buildeploy.ReferenceCheck
             return Array.Find(excludeNames, delegate (string s) { return name.Name == s; }) != null;
         }
 
+        private AssemblyName PrepareAssemblyName(AssemblyName assemblyName)
+        {
+            if (IgnoreVersions)
+                assemblyName.Version = null;
+            return assemblyName;
+        }
         private void CheckReferences(Assembly assembly)
         {
-            AssemblyName[] references = assembly.GetReferencedAssemblies();
+                var references = assembly.GetReferencedAssemblies()
+                .Select(PrepareAssemblyName)
+                .ToList();
+
             foreach (AssemblyName name in references)
             {
                 //Wenn die Referenz nirgendwo zu finden ist, dann ausgeben.
@@ -152,7 +177,7 @@ namespace Cms.Buildeploy.ReferenceCheck
             {
                 //Assemblynamen erstellen und hinzufügen
                 AssemblyName asm = AssemblyName.GetAssemblyName(fileName);
-                Assemblies.Add(asm);
+                Assemblies.Add(PrepareAssemblyName(asm));
             }
             //Exceptions abfangen, fall die Datei keine Assembly ist.
             catch (BadImageFormatException) { }
@@ -162,7 +187,7 @@ namespace Cms.Buildeploy.ReferenceCheck
 
         internal void AddExclude(AssemblyName assemblyName)
         {
-            ExcludedAssemblies.Add(assemblyName);
+            ExcludedAssemblies.Add(PrepareAssemblyName(assemblyName));
         }
     }
 }

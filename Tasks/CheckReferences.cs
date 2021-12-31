@@ -16,6 +16,8 @@ namespace Cms.Buildeploy.Tasks
 
         public ITaskItem[] Assemblies { get; set; }
 
+        public bool IgnoreAssemblyVersions { get; set; }
+
         public override bool Execute()
         {
 
@@ -32,9 +34,8 @@ namespace Cms.Buildeploy.Tasks
 
                 Log.LogMessage("ReferenceChecker: Assembly: {0}, Class: {1}", assembly, className);
                 ReferenceChecker checker = (ReferenceChecker)domain.CreateInstanceFromAndUnwrap(assembly, className);
-
                 checker.RootPath = Path;
-                    
+                checker.IgnoreVersions = IgnoreAssemblyVersions;            
                 if (Excludes != null)
                 {
                     foreach (ITaskItem item in Excludes)

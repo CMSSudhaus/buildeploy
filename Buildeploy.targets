@@ -429,7 +429,7 @@
     
     
     
-    <CheckReferences Path="$(TempClientRedist)" MessageInfo="Client" Excludes="@(CheckReferenceExclude)"/>
+    <CheckReferences Path="$(TempClientRedist)" MessageInfo="Client" Excludes="@(CheckReferenceExclude)" IgnoreAssemblyVersions="$(CheckReferencesIngoreAssemblyVersions)"/>
     <CallTarget Targets="CopyLocalizationFiles"/> 
     <MakeDir Directories="$(TempServerRedist)"/>
 
@@ -438,7 +438,7 @@
     <Copy SourceFiles="@(ServerDependency)" DestinationFolder="$(TempServerRedist)"/>
     <Copy SourceFiles="@(ServerLibDependencyPath)" DestinationFolder="$(TempServerRedist)"/>
   
-    <CheckReferences Path="$(TempServerRedist)" MessageInfo="Server" Excludes="@(CheckReferenceExclude)"/>
+    <CheckReferences Path="$(TempServerRedist)" MessageInfo="Server" Excludes="@(CheckReferenceExclude)" IgnoreAssemblyVersions="$(CheckReferencesIngoreAssemblyVersions)"/>
     <MakeDirAndRenameExisting DirectoryName="$(VersionRedistRoot)" Prefix="failed" Condition="$(IgnoreExistingRedistRoot)!=true" />
     <WriteTextFile FileName="$(VersionRedistRoot)\releasenotes-$(Version).txt" Text="$(ReleaseNotes)" Condition="$(ReleaseNotes)!=''"/>
     <ItemGroup>
@@ -515,7 +515,9 @@
       <CheckReferenceAssembly Include="$(WebsiteSourceBin)\**\*.dll" Exclude="$(WebsiteSourceBin)\roslyn\**"/>
     </ItemGroup>
     
-    <CheckReferences Assemblies="@(CheckReferenceAssembly)" MessageInfo="Website" Excludes="@(CheckReferenceExclude)" Condition="$(WebSiteSource)!=''"/>
+    <CheckReferences Assemblies="@(CheckReferenceAssembly)" MessageInfo="Website" Excludes="@(CheckReferenceExclude)" 
+					 IgnoreAssemblyVersions="$(CheckReferencesIngoreAssemblyVersions)"
+					 Condition="$(WebSiteSource)!=''"/>
     <ItemGroup>
       <CompiledSite Include="$(CompiledSite)\**\*.*" Exclude="$(CompiledSite)\**\*.csproj;$(CompiledSite)\**\*.user;$(CompiledSite)\obj\**;$(CompiledSite)\**\web*.config;$(CompiledSite)\**\*.snk;$(CompiledSite)\**\*.log" />
     </ItemGroup>
