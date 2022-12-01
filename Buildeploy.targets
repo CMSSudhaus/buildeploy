@@ -429,7 +429,9 @@
     
     
     
-    <CheckReferences Path="$(TempClientRedist)" MessageInfo="Client" Excludes="@(CheckReferenceExclude)" IgnoreAssemblyVersions="$(CheckReferencesIngoreAssemblyVersions)"/>
+    <CheckReferences Path="$(TempClientRedist)" MessageInfo="Client" Excludes="@(CheckReferenceExclude)" 
+					 ConfigurationFile="$(ClientCheckReferencesConfigFile)"
+					 IgnoreAssemblyVersions="$(CheckReferencesIngoreAssemblyVersions)"/>
     <CallTarget Targets="CopyLocalizationFiles"/> 
     <MakeDir Directories="$(TempServerRedist)"/>
 
@@ -516,7 +518,7 @@
     </ItemGroup>
     
     <CheckReferences Assemblies="@(CheckReferenceAssembly)" MessageInfo="Website" Excludes="@(CheckReferenceExclude)" 
-					 IgnoreAssemblyVersions="$(CheckReferencesIngoreAssemblyVersions)"
+					 IgnoreAssemblyVersions="$(CheckReferencesIngoreAssemblyVersions)" ConfigurationFile="$(WebSiteCheckReferencesConfigFile)"
 					 Condition="$(WebSiteSource)!=''"/>
     <ItemGroup>
       <CompiledSite Include="$(CompiledSite)\**\*.*" Exclude="$(CompiledSite)\**\*.csproj;$(CompiledSite)\**\*.user;$(CompiledSite)\obj\**;$(CompiledSite)\**\web*.config;$(CompiledSite)\**\*.snk;$(CompiledSite)\**\*.log" />

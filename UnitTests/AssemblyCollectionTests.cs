@@ -37,6 +37,51 @@ namespace UnitTests
 	                </runtime>
                 </configuration>");
             Assert.NotNull(assemblies.Find(new AssemblyName("Test, Version=1.0.0.0, publicKeyToken=31bf3856ad364e35")));
+            Assert.NotNull(assemblies.Find(new AssemblyName("Test, Version=1.0.0.0, culture=neutral, publicKeyToken=31bf3856ad364e35")));
+        }
+
+        [Fact]
+        public void RedirectReadFromConfigWithCultureTest()
+        {
+            AssemblyCollection assemblies = new AssemblyCollection
+            {
+                new AssemblyName("Test, Version=2.0.0.0, culture=neutral, publicKeyToken=31bf3856ad364e35")
+            };
+            assemblies.ReadRedirectsFromConfigXmlString(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                <configuration>
+	                <runtime>
+		                <assemblyBinding xmlns=""urn:schemas-microsoft-com:asm.v1"">
+			                <dependentAssembly>
+				                <assemblyIdentity name=""Test"" publicKeyToken=""31bf3856ad364e35"" culture=""neutral"" />
+				                <bindingRedirect oldVersion=""0.0.0.0-2.0.0.0"" newVersion=""2.0.0.0"" />
+			                </dependentAssembly>
+		                </assemblyBinding>
+	                </runtime>
+                </configuration>");
+            Assert.NotNull(assemblies.Find(new AssemblyName("Test, Version=1.0.0.0, publicKeyToken=31bf3856ad364e35")));
+            Assert.NotNull(assemblies.Find(new AssemblyName("Test, Version=1.0.0.0, culture=neutral, publicKeyToken=31bf3856ad364e35")));
+        }
+
+        [Fact]
+        public void RedirectReadFromConfigWithoutCultureTest()
+        {
+            AssemblyCollection assemblies = new AssemblyCollection
+            {
+                new AssemblyName("Test, Version=2.0.0.0, culture=neutral, publicKeyToken=31bf3856ad364e35")
+            };
+            assemblies.ReadRedirectsFromConfigXmlString(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                <configuration>
+	                <runtime>
+		                <assemblyBinding xmlns=""urn:schemas-microsoft-com:asm.v1"">
+			                <dependentAssembly>
+				                <assemblyIdentity name=""Test"" publicKeyToken=""31bf3856ad364e35"" />
+				                <bindingRedirect oldVersion=""0.0.0.0-2.0.0.0"" newVersion=""2.0.0.0"" />
+			                </dependentAssembly>
+		                </assemblyBinding>
+	                </runtime>
+                </configuration>");
+            Assert.NotNull(assemblies.Find(new AssemblyName("Test, Version=1.0.0.0, publicKeyToken=31bf3856ad364e35")));
+            Assert.NotNull(assemblies.Find(new AssemblyName("Test, Version=1.0.0.0, culture=neutral, publicKeyToken=31bf3856ad364e35")));
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Cms.Buildeploy.ReferenceCheck
 {
     abstract class AssemblyCollectionBase<TElement> : Collection<TElement> where TElement : class
     {
-
+        private const string neutralCultureName = "neutral";
         private readonly Dictionary<string, AssemblyRedirect> redirects = new Dictionary<string, AssemblyRedirect>(StringComparer.OrdinalIgnoreCase);
         public TElement Find(AssemblyName name)
         {
@@ -21,9 +21,15 @@ namespace Cms.Buildeploy.ReferenceCheck
 
         private TElement FindByFullName(AssemblyName name)
         {
-            return this.FirstOrDefault(item => GetAssemblyName(item).FullName == name.FullName);
+            return this.FirstOrDefault(item => RemoveCulture(GetAssemblyName(item)).FullName == RemoveCulture(name).FullName);
         }
 
+        private AssemblyName RemoveCulture(AssemblyName assemblyName)
+        {
+            var result = (AssemblyName)assemblyName.Clone();
+            result.CultureInfo = null;
+            return result;
+        }
         private TElement FindRedirected(AssemblyName assemblyName)
         {
             if (redirects.TryGetValue(assemblyName.Name, out var redirect))
@@ -117,14 +123,13 @@ namespace Cms.Buildeploy.ReferenceCheck
             XElement identityElement = dependentAssemblyElement.Element(GetXName("assemblyIdentity"));
             string name = identityElement.Attribute("name").Value;
             string tokenString = identityElement.Attribute("publicKeyToken").Value;
-
+            string cultureString = identityElement.Attribute("culture")?.Value ?? neutralCultureName;
             XElement bindingRedirectElement = dependentAssemblyElement.Element(GetXName("bindingRedirect"));
             string versionRangeString = bindingRedirectElement.Attribute("oldVersion").Value;
             string newVersion = bindingRedirectElement.Attribute("newVersion").Value;
-
             var versionRange = ParseVersionRange(versionRangeString);
 
-            return new AssemblyRedirect(versionRange.Low, versionRange.High, new AssemblyName($"{name}, Version={newVersion}, PublicKeyToken={tokenString}"));
+            return new AssemblyRedirect(versionRange.Low, versionRange.High, new AssemblyName($"{name}, Version={newVersion}, culture={cultureString}, PublicKeyToken={tokenString}"));
         }
 
         private static VersionRange ParseVersionRange(string versionRange)

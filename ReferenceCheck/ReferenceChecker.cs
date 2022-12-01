@@ -189,6 +189,11 @@ namespace Cms.Buildeploy.ReferenceCheck
         {
             ExcludedAssemblies.Add(PrepareAssemblyName(assemblyName));
         }
+
+        internal void LoadConfiguration(string configurationFile)
+        {
+            Assemblies.ReadRedirectsFromConfigXmlString(File.ReadAllText(configurationFile));
+        }
     }
 }
 

@@ -6,6 +6,7 @@ using Microsoft.Build.Framework;
 using System.Reflection;
 using Microsoft.Build.Utilities;
 using Cms.Buildeploy.ReferenceCheck;
+using System.IO;
 
 namespace Cms.Buildeploy.Tasks
 {
@@ -18,6 +19,7 @@ namespace Cms.Buildeploy.Tasks
 
         public bool IgnoreAssemblyVersions { get; set; }
 
+        public string ConfigurationFile { get; set; }
         public override bool Execute()
         {
 
@@ -35,14 +37,24 @@ namespace Cms.Buildeploy.Tasks
                 Log.LogMessage("ReferenceChecker: Assembly: {0}, Class: {1}", assembly, className);
                 ReferenceChecker checker = (ReferenceChecker)domain.CreateInstanceFromAndUnwrap(assembly, className);
                 checker.RootPath = Path;
-                checker.IgnoreVersions = IgnoreAssemblyVersions;            
+                checker.IgnoreVersions = IgnoreAssemblyVersions;
+                if (!string.IsNullOrEmpty(ConfigurationFile))
+                {
+                    if (!File.Exists(ConfigurationFile))
+                    {
+                        Log.LogError("Configuration file '{0}' does not exist", ConfigurationFile);
+                        return false;
+                    }
+                    checker.LoadConfiguration(ConfigurationFile);
+                }
+
                 if (Excludes != null)
                 {
                     foreach (ITaskItem item in Excludes)
                         checker.AddExclude(new AssemblyName(item.ItemSpec));
                 }
 
-                if (Assemblies!=null)
+                if (Assemblies != null)
                 {
                     foreach (var item in Assemblies)
                         checker.AddAssembly(item.ItemSpec);
@@ -58,7 +70,7 @@ namespace Cms.Buildeploy.Tasks
                         Log.LogError("[MISSING REFERENCE ({2})] {0} referenced by {1}", name.MissingAssembly.FullName, name.ReferencesBy.Name, MessageInfo);
                     }
 
-                    
+
                     Log.LogMessage(MessageImportance.High, "Copy & Paste friendly list of assemblies: \r\n{0}",
                         string.Join(";\r\n", reportedAssemblies.Select(ra => ra.MissingAssembly.Name + ".dll")));
 
