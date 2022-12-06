@@ -72,7 +72,7 @@ namespace Cms.Buildeploy.Tasks
 
 
                     Log.LogMessage(MessageImportance.High, "Copy & Paste friendly list of assemblies: \r\n{0}",
-                        string.Join(";\r\n", reportedAssemblies.Select(ra => ra.MissingAssembly.Name + ".dll")));
+                        string.Join(";\r\n", reportedAssemblies.Select(ra => ra.MissingAssembly.Name)));
 
                     return false;
                 }
